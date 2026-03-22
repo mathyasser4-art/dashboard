@@ -59,6 +59,15 @@
     margin: 1rem 0rem;
 }
 
+.question-math-input {
+    width: 100%;
+    margin: 1rem 0;
+    border: 1px solid rgb(94, 93, 93);
+    border-radius: 5px;
+    overflow: hidden;
+    text-align: left;
+}
+
 .update-question div button {
     margin: 0.8rem 0.3rem;
     margin-bottom: 1.4rem;

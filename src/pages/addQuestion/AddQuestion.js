@@ -57,7 +57,7 @@ const AddQuestion = () => {
     const wafs = useRef();
     const wase = useRef();
     const wath = useRef();
-    const questionTextRef = useRef(null); // Ref for question textarea
+    const questionRef = useRef();
 
 
     // Start Keyboard Func
@@ -221,6 +221,7 @@ const AddQuestion = () => {
     }
 
     const newQuestion = () => {
+        if (questionRef.current) questionRef.current()
         if (questionType == "MCQ Question") {
             mf.current()
             wafs.current()
@@ -258,22 +259,6 @@ const AddQuestion = () => {
         setCorrectAnswer(value)
     }
 
-    const insertMathSymbol = (symbol) => {
-        if (questionTextRef.current) {
-            const textArea = questionTextRef.current;
-            const start = textArea.selectionStart;
-            const end = textArea.selectionEnd;
-            const text = question;
-            const newText = text.substring(0, start) + symbol + text.substring(end);
-            setQuestion(newText);
-            // Move cursor after inserted symbol
-            setTimeout(() => {
-                textArea.selectionStart = textArea.selectionEnd = start + symbol.length;
-                textArea.focus();
-            }, 0);
-        }
-    };
-
     return (
         <div className="add-question">
             <div>
@@ -308,34 +293,9 @@ const AddQuestion = () => {
                     </div>
                     <input className='select-input' type="file" name='images' onChange={selectQuestionPic} accept='.png, .jpg, .jpeg, .webp' />
                 </label>}
-                {/* Math Symbols Toolbar */}
-                <div style={{
-                    display: 'flex',
-                    gap: '8px',
-                    marginBottom: '10px',
-                    padding: '10px',
-                    backgroundColor: '#f0f0f0',
-                    borderRadius: '5px',
-                    flexWrap: 'wrap',
-                    alignItems: 'center'
-                }}>
-                    <span style={{ fontSize: '12px', color: '#666', fontWeight: 'bold', marginRight: '10px' }}>Math Symbols:</span>
-                    <button onClick={() => insertMathSymbol('√')} style={{padding: '6px 12px', cursor: 'pointer', border: '1px solid #ddd', borderRadius: '4px', backgroundColor: '#fff', fontSize: '16px'}}>√ Square Root</button>
-                    <button onClick={() => insertMathSymbol('÷')} style={{padding: '6px 12px', cursor: 'pointer', border: '1px solid #ddd', borderRadius: '4px', backgroundColor: '#fff', fontSize: '16px'}}>÷ Division</button>
-                    <button onClick={() => insertMathSymbol('×')} style={{padding: '6px 12px', cursor: 'pointer', border: '1px solid #ddd', borderRadius: '4px', backgroundColor: '#fff', fontSize: '16px'}}>× Multiply</button>
-                    <button onClick={() => insertMathSymbol('¹/₂')} style={{padding: '6px 12px', cursor: 'pointer', border: '1px solid #ddd', borderRadius: '4px', backgroundColor: '#fff', fontSize: '14px'}}>½ Half</button>
-                    <button onClick={() => insertMathSymbol('¼')} style={{padding: '6px 12px', cursor: 'pointer', border: '1px solid #ddd', borderRadius: '4px', backgroundColor: '#fff', fontSize: '14px'}}>¼ Quarter</button>
-                    <button onClick={() => insertMathSymbol('¾')} style={{padding: '6px 12px', cursor: 'pointer', border: '1px solid #ddd', borderRadius: '4px', backgroundColor: '#fff', fontSize: '14px'}}>¾ Three Quarters</button>
-                    <button onClick={() => insertMathSymbol('±')} style={{padding: '6px 12px', cursor: 'pointer', border: '1px solid #ddd', borderRadius: '4px', backgroundColor: '#fff', fontSize: '16px'}}>± Plus/Minus</button>
-                    <button onClick={() => insertMathSymbol('°')} style={{padding: '6px 12px', cursor: 'pointer', border: '1px solid #ddd', borderRadius: '4px', backgroundColor: '#fff', fontSize: '16px'}}>° Degree</button>
+                <div className='question-math-input'>
+                    <MathInput setClearRef={f => questionRef.current = f} setValue={setQuestion} />
                 </div>
-                <textarea 
-                    ref={questionTextRef}
-                    type="text" 
-                    placeholder='Enter the question' 
-                    value={question} 
-                    onChange={e => setQuestion(e.target.value)} 
-                />
                 {(questionType == 'Essay Question') ? <>
                     <div className="keyboard essay-answer">
                         <div style={{ position: 'relative', maxWidth: '370px' }}>

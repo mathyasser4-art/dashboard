@@ -38,9 +38,13 @@
     margin: 1rem 0rem;
 }
 
-textarea {  
-   font-family:"Times New Roman", Times, serif;  
-   font-size: 20px;   
+.question-math-input {
+    width: 100%;
+    margin: 1rem 0;
+    border: 1px solid rgb(94, 93, 93);
+    border-radius: 5px;
+    overflow: hidden;
+    text-align: left;
 }
 
 .add-question div button {

@@ -199,7 +199,9 @@ const UpdateQuestion = () => {
                     <p>This question is {questionDetails.autoCorrect ? 'Auto Correct' : 'Not Auto Correct'}</p>
                     {autoCorrectLoading ? <p>Waiting...</p> : <p onClick={handleUpadteAutoCorrect}>(Chanage it to {questionDetails.autoCorrect ? 'Not Auto Correct' : 'Auto Correct'})</p>}
                 </div>
-                <textarea type="text" placeholder='Enter the question' value={question} onChange={e => setQuestion(e.target.value)} />
+                <div className='question-math-input'>
+                    <MathInput initialLatex={question} setValue={setQuestion} />
+                </div>
                 {(questionType == 'Essay') ? <div className="keyboard essay-answer">
                     <div style={{ position: 'relative', maxWidth: '370px' }}>
                         <input
