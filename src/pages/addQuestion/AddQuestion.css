@@ -1,0 +1,247 @@
+.add-question {
+    padding: 7rem 5.5rem;
+}
+
+.add-question div {
+    text-align: center;
+}
+
+.head-title {
+    font-size: 1.5rem;
+    margin-bottom: 1rem;
+}
+
+.add-question label div {
+    width: 100%;
+    padding: 1rem 0rem;
+    border: 1px solid rgb(134, 134, 134);
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.add-question label div i {
+    font-size: 6rem;
+    color: rgb(56, 56, 238);
+}
+
+.add-question label div p {
+    color: rgb(58, 58, 58);
+}
+
+.add-question input,
+.add-question textarea {
+    width: 100%;
+    display: block;
+    padding: 1rem 1rem;
+    border: 1px solid rgb(94, 93, 93);
+    border-radius: 5px;
+    margin: 1rem 0rem;
+}
+
+textarea {  
+   font-family:"Times New Roman", Times, serif;  
+   font-size: 20px;   
+}
+
+.add-question div button {
+    margin: 0.8rem 0.3rem;
+    margin-bottom: 1.4rem;
+    width: 180px;
+    padding: 0.8rem 1rem;
+}
+
+.cancel-button {
+    background-color: rgb(236, 4, 4);
+}
+
+.select-input {
+    display: none !important;
+}
+
+.answer-pic {
+    opacity: 0.5;
+}
+
+.answer-button {
+   margin-top: 0.7rem !important;
+}
+
+.answer-item{
+    margin: 0.4rem 0.3rem;
+    margin-bottom: 0;
+    background-color: rgb(56, 56, 238);
+    color: #fff;
+    padding: 0.44rem 1.3rem;
+    border-radius: 5px;
+    font-weight: 500;
+    font-size: 1.1rem;
+    position: relative;
+}
+
+.answer-item span{
+    position: absolute;
+    top: -3px;
+    right: 5px;
+    cursor: pointer;
+}
+
+.preview-img{
+    width: 85% !important;
+}
+
+.correct{
+    margin-bottom: 0.5rem;
+}
+
+.correct img{
+    width: 30px;
+}
+
+.correct p{
+    color: rgb(1, 116, 1);
+    margin-left: 0.3rem;
+}
+
+.question-popup {
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    right: 0;
+    left: 0;
+}
+
+.question-popup div {
+    background-color: #fff;
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.2), 0 3px 8px 0 rgba(0, 0, 0, 0.19);
+    padding: 2rem;
+    border-radius: 10px;
+    text-align: center;
+}
+
+.question-popup div button {
+    margin: 0.6rem 0.3rem;
+    width: 280px;
+}
+
+.question-popup div p {
+    font-size: 1.2rem;
+    margin-bottom: 0.8rem;
+}
+
+.question-popup div p:nth-of-type(1) {
+    font-size: 2.1rem;
+}
+
+.question-popup div p:nth-of-type(2) {
+    width: 400px;
+}
+
+.question-popup img {
+    width: 100px;
+}
+
+.keyboard p,
+.keyboard button,
+.keyboard select{
+    padding: 0;
+    margin: 0;
+    width: auto;
+    font-size: 1.35rem;
+}
+
+.keyboard p,
+.keyboard span{
+    background-color: transparent !important;
+    color: #020617 !important;
+    text-align: left;
+}
+
+.keyboard button,
+.keyboard select{
+    padding: 0.5rem 0.6rem !important;
+    min-width: 41px;
+}
+
+.keyboard select{
+    border: transparent;
+    border-radius: 0.25rem;
+    background-color: transparent;
+    appearance: none;
+    color: #020617;
+    -webkit-appearance: none;
+    padding-left: 0.5rem;
+    padding-right: 1.75rem;
+    font-size: 1.1rem;
+}
+
+.keyboard{
+    position: relative;
+}
+
+.keyboard li{
+    position: absolute;
+    top: 2.4px;
+    /* right: 3px; */
+    left: 400px;
+    background-color: rgb(56, 56, 238);
+    color: #fff;
+    padding: 0rem 1rem;
+    padding-bottom: 0.2rem;
+    font-size: 2rem;
+    border-radius: 10px;
+    margin-left: 0.8rem;
+    cursor: pointer;
+    list-style-type: none;
+}
+
+.mcq-input{
+    margin-right: 0.8rem;
+    width: 30%;
+}
+
+.mcq-answer{
+    margin-top: 1rem;
+}
+
+input[type="checkbox"],
+input[type="radio"]{
+	width: 1.5em;
+	height: 1.5em;
+	margin-right: 0.65rem;
+}
+
+fieldset{
+    margin-bottom: 1rem;
+    border-radius: 10px;
+}
+
+legend {
+	font-weight: 700;
+    text-align: start;
+}
+
+.graph-img{
+    width: 25%;
+    margin-left: 0.8rem;
+}
+
+.graph-img-fs{
+    margin-left: 0;
+}
+
+.graph-img i{
+    color: rgb(186, 62, 62) !important;
+}
+
+.graph-preview{
+    width: 25%;
+    margin-left: 0.8rem;
+}
+
+.graph-preview-fs{
+    margin-left: 0;
+}
+
+.answer-toggel p{
+    font-size: 18px !important;
+}

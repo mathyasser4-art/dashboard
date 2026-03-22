@@ -1,0 +1,138 @@
+.client-container {
+    padding: 7rem 5.5rem;
+}
+
+.client-table {
+    overflow-x: auto;
+}
+
+.client-table table {
+    border-collapse: collapse;
+    width: 100%;
+}
+
+.client-table th,
+.client-table td {
+    text-align: left;
+    padding: 8px;
+}
+
+.client-table tr:nth-child(even) {
+    background-color: #f2f2f2;
+}
+
+.client-pagination {
+    margin: 30px 0px;
+}
+
+.client-pagination button {
+    background-color: #3498db;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.client-pagination button:nth-child(1):hover {
+    background-color: #166498;
+}
+
+.client-pagination button:nth-child(2) {
+    background-color: rgb(178, 2, 2);
+    margin-left: 15px;
+}
+
+.client-pagination button:nth-child(2):hover {
+    background-color: rgb(152, 23, 23);
+}
+
+.table-action-icon {
+    color: green;
+    cursor: pointer;
+    font-size: 18px;
+}
+
+.table-action-icon i:nth-child(2){
+    color: #166498;
+    margin-left: 25px;
+    cursor: pointer;
+}
+
+.client-popup {
+    position: fixed;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.7);
+    justify-content: center;
+    align-items: center;
+    z-index: 99999999999;
+}
+
+.client-popup-content {
+    background-color: #fff;
+    padding: 25px;
+    border-radius: 5px;
+    width: 400px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.client-popup-content .close-btn {
+    cursor: pointer;
+    float: right;
+    font-size: 28px;
+    color: #aaa;
+}
+
+.client-popup-content .close-btn:hover {
+    color: #000;
+}
+
+.client-popup-content h2 {
+    margin-top: 0;
+}
+
+.client-popup-content button {
+    padding: 10px;
+    width: 100%;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-top: 20px;
+}
+
+.client-popup-content button:hover {
+    background-color: #0056b3;
+}
+
+.client-popup h4{
+    margin-bottom: 5px;
+}
+
+.table-action-read{
+    color: rgb(245, 7, 7);
+    cursor: pointer;
+    font-size: 18px;
+}
+
+/* Large devices (laptops/desktops, 992px and up) */
+@media only screen and (max-width: 768px) {
+    .client-container {
+        padding-left: 1rem;
+    }
+
+    .client-popup-content {
+        width: 95%;
+        margin-right: 1rem;
+    }
+
+    .client-popup {
+        padding: 0px 0.5rem;
+    }
+}

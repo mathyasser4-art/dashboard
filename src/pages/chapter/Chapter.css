@@ -1,0 +1,74 @@
+.chpater-container {
+    padding: 7rem 5.5rem;
+}
+
+.chapter-head-name {
+    font-weight: bold;
+    margin-bottom: 0.5rem;
+}
+
+.chapter-icon i {
+    margin: 0rem 0.4rem;
+    font-size: 1.4rem;
+    cursor: pointer;
+}
+
+.icon {
+    color: #000;
+}
+
+.question {
+    background-color: #fff;
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.2), 0 3px 8px 0 rgba(0, 0, 0, 0.19);
+    padding: 1.2rem 1rem;
+    margin-top: 1rem;
+    border-radius: 5px;
+}
+
+.question p{
+    color: rgb(56, 56, 238);
+}
+
+.question i{
+    margin: 0rem 0.3rem;
+    font-size: 1.3rem;
+    cursor: pointer;
+}
+
+.chapter-popup {
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    right: 0;
+    left: 0;
+}
+
+.chapter-popup div {
+    background-color: #fff;
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.2), 0 3px 8px 0 rgba(0, 0, 0, 0.19);
+    padding: 2rem;
+    border-radius: 10px;
+    text-align: center;
+}
+
+.chapter-popup div button {
+    margin: 0rem 0.3rem;
+}
+
+.chapter-popup div button:nth-of-type(2) {
+    background-color: rgb(236, 4, 4);
+}
+
+.chapter-popup div p {
+    font-size: 1.2rem;
+    margin-bottom: 0.8rem;
+}
+
+.update-chapter-popup div input {
+    display: block;
+    padding: 0.5rem 1rem;
+    border: 1px solid rgb(94, 93, 93);
+    border-radius: 5px;
+    margin-bottom: 0.7rem;
+    width: 250px;
+}

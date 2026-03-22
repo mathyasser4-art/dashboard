@@ -1,0 +1,22 @@
+nav{
+    position: fixed;
+    width: 100%;
+    box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+    z-index: 999999;
+    background-color: #fff;
+}
+
+.nav-container{
+    padding: 1rem 2rem;
+}
+
+.nav-container img{
+    width: 150px;
+}
+
+.school i {
+    margin-right: 1rem;
+    font-size: 35px;
+    color: blue;
+    cursor: pointer;
+}
