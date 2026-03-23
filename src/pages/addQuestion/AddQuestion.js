@@ -1,12 +1,31 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import addQuestion from '../../api/addQuestion.api'
 import addAnswerPic from '../../api/addAnswerPic.api'
 import addGraphQuestion from '../../api/addGraphQuestion.api';
 import correctIcon from '../../correct-icon.png'
 import MathInput from "react-math-keyboard";
+import ReactQuill from 'react-quill';
+import 'react-quill/dist/quill.snow.css';
+import katex from 'katex';
+import 'katex/dist/katex.min.css';
 import '../../reusable.css';
 import './AddQuestion.css'
+
+window.katex = katex;
+
+const questionModules = {
+    toolbar: [
+        ['bold', 'italic', 'underline'],
+        [{ list: 'ordered' }, { list: 'bullet' }],
+        ['formula'],
+        ['clean'],
+    ],
+};
+
+const questionFormats = ['bold', 'italic', 'underline', 'list', 'bullet', 'formula'];
+
+const isQuillEmpty = (val) => !val || val === '<p><br></p>';
 
 const AddQuestion = () => {
     const [serverOperationError, setserverOperationError] = useState(null)
@@ -24,10 +43,10 @@ const AddQuestion = () => {
     const [quesionGraphAdded, setQuesionGraphAdded] = useState(false)
     const [quesionFullAdded, setQuesionFullAdded] = useState(false)
     const [quesionID, setQuesionID] = useState()
-    const [mcqAnswerFs, setMcqAnswerFs] = useState('') //
-    const [mcqAnswerSe, setMcqAnswerSe] = useState('') //
-    const [mcqAnswerTh, setMcqAnswerTh] = useState('') //
-    const [mcqAnswerFr, setMcqAnswerFr] = useState('') //
+    const [mcqAnswerFs, setMcqAnswerFs] = useState('')
+    const [mcqAnswerSe, setMcqAnswerSe] = useState('')
+    const [mcqAnswerTh, setMcqAnswerTh] = useState('')
+    const [mcqAnswerFr, setMcqAnswerFr] = useState('')
     const [correctAnswer, setCorrectAnswer] = useState('')
     const [questionType, setQuestionType] = useState('Essay Question')
     const [autoCorrect, setAutoCorrect] = useState(false)
@@ -43,18 +62,13 @@ const AddQuestion = () => {
     const [serverGraphLoading, setServerGraphLoading] = useState(false)
 
     const answerRef = useRef(null);
-
-    const { chapterID, chapterName, questionTypeID, unitID, questionTypeName, subjectID, questionNum } = useParams()
-    const navigate = useNavigate()
     const mf = useRef();
     const wafs = useRef();
     const wase = useRef();
     const wath = useRef();
-    const questionRef = useRef();
 
-
-
-
+    const { chapterID, chapterName, questionTypeID, unitID, questionTypeName, subjectID, questionNum } = useParams()
+    const navigate = useNavigate()
 
     const selectQuestionPic = (e) => {
         setQuestionPic(e.target.files[0])
@@ -104,7 +118,7 @@ const AddQuestion = () => {
     }
 
     const addNewQuestion = () => {
-        if (question === '' || questionPoint === '' || allAnswer.length === 0 && questionType === 'Essay Question'
+        if (isQuillEmpty(question) || questionPoint === '' || allAnswer.length === 0 && questionType === 'Essay Question'
             || mcqAnswerFr === '' && questionType === 'MCQ Question' || mcqAnswerFs === '' && questionType === 'MCQ Question'
             || mcqAnswerSe === '' && questionType === 'MCQ Question' || mcqAnswerTh === '' && questionType === 'MCQ Question') {
             setserverOperationError('Enter the question data first!')
@@ -167,7 +181,7 @@ const AddQuestion = () => {
     }
 
     const newQuestion = () => {
-        if (questionRef.current) questionRef.current()
+        setQuestion('')
         if (answerRef.current) answerRef.current()
         if (questionType == "MCQ Question") {
             mf.current()
@@ -176,7 +190,6 @@ const AddQuestion = () => {
             wath.current()
         }
         setQuesionFullAdded(false)
-        setQuestion('')
         setAnswer('')
         setQuestionPoint('')
         setAllAnswer([])
@@ -240,8 +253,15 @@ const AddQuestion = () => {
                     </div>
                     <input className='select-input' type="file" name='images' onChange={selectQuestionPic} accept='.png, .jpg, .jpeg, .webp' />
                 </label>}
-                <div className='question-math-input'>
-                    <MathInput setClearRef={f => questionRef.current = f} setValue={setQuestion} />
+                <div className='question-quill-editor'>
+                    <ReactQuill
+                        theme="snow"
+                        value={question}
+                        onChange={setQuestion}
+                        modules={questionModules}
+                        formats={questionFormats}
+                        placeholder="Enter the question text here... Click Σ in the toolbar to insert a math formula."
+                    />
                 </div>
                 {(questionType == 'Essay Question') ? <>
                     <div className="keyboard essay-answer">

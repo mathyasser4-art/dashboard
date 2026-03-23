@@ -6,8 +6,27 @@ import addAnswerPic from '../../api/addAnswerPic.api'
 import updateAutoCorrect from '../../api/updateAutoCorrect.api'
 import correctIcon from '../../correct-icon.png'
 import MathInput from "react-math-keyboard";
+import ReactQuill from 'react-quill';
+import 'react-quill/dist/quill.snow.css';
+import katex from 'katex';
+import 'katex/dist/katex.min.css';
 import '../../reusable.css'
 import './UpdateQuestion.css'
+
+window.katex = katex;
+
+const questionModules = {
+    toolbar: [
+        ['bold', 'italic', 'underline'],
+        [{ list: 'ordered' }, { list: 'bullet' }],
+        ['formula'],
+        ['clean'],
+    ],
+};
+
+const questionFormats = ['bold', 'italic', 'underline', 'list', 'bullet', 'formula'];
+
+const isQuillEmpty = (val) => !val || val === '<p><br></p>';
 
 const UpdateQuestion = () => {
     const [serverOperationError, setserverOperationError] = useState(null)
@@ -70,7 +89,7 @@ const UpdateQuestion = () => {
     }
 
     const handleUpadteQuestion = () => {
-        if (question === '' || questionPoint === '' || allAnswer.length === 0 && questionType === 'Essay'
+        if (isQuillEmpty(question) || questionPoint === '' || allAnswer.length === 0 && questionType === 'Essay'
             || mcqAnswerFr === '' && questionType === 'MCQ' || mcqAnswerFs === '' && questionType === 'MCQ'
             || mcqAnswerSe === '' && questionType === 'MCQ' || mcqAnswerTh === '' && questionType === 'MCQ') {
             setserverOperationError('Enter the question data first!')
@@ -142,8 +161,15 @@ const UpdateQuestion = () => {
                     <p>This question is {questionDetails.autoCorrect ? 'Auto Correct' : 'Not Auto Correct'}</p>
                     {autoCorrectLoading ? <p>Waiting...</p> : <p onClick={handleUpadteAutoCorrect}>(Chanage it to {questionDetails.autoCorrect ? 'Not Auto Correct' : 'Auto Correct'})</p>}
                 </div>
-                <div className='question-math-input'>
-                    <MathInput initialLatex={question} setValue={setQuestion} />
+                <div className='question-quill-editor'>
+                    <ReactQuill
+                        theme="snow"
+                        value={question}
+                        onChange={setQuestion}
+                        modules={questionModules}
+                        formats={questionFormats}
+                        placeholder="Enter the question text here... Click Σ in the toolbar to insert a math formula."
+                    />
                 </div>
                 {(questionType == 'Essay') ? <div className="keyboard essay-answer">
                     <div className="essay-math-input">
