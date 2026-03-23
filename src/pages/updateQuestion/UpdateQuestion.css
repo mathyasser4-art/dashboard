@@ -59,35 +59,6 @@
     margin: 1rem 0rem;
 }
 
-.question-quill-editor {
-    width: 100%;
-    margin: 1rem 0;
-    border: 1px solid rgb(94, 93, 93);
-    border-radius: 5px;
-    overflow: hidden;
-    text-align: left;
-}
-
-.question-quill-editor .ql-toolbar.ql-snow {
-    border: none;
-    border-bottom: 1px solid rgb(94, 93, 93);
-    background-color: #f8f8f8;
-}
-
-.question-quill-editor .ql-container.ql-snow {
-    border: none;
-    font-size: 1rem;
-}
-
-.question-quill-editor .ql-editor {
-    min-height: 130px;
-    line-height: 1.7;
-}
-
-.question-quill-editor .ql-editor.ql-blank::before {
-    color: #999;
-    font-style: normal;
-}
 
 .update-question div button {
     margin: 0.8rem 0.3rem;

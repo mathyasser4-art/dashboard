@@ -5,25 +5,9 @@ import addAnswerPic from '../../api/addAnswerPic.api'
 import addGraphQuestion from '../../api/addGraphQuestion.api';
 import correctIcon from '../../correct-icon.png'
 import MathInput from "react-math-keyboard";
-import ReactQuill from 'react-quill';
-import 'react-quill/dist/quill.snow.css';
-import katex from 'katex';
-import 'katex/dist/katex.min.css';
+import RichTextEditor from '../../components/RichTextEditor/RichTextEditor';
 import '../../reusable.css';
 import './AddQuestion.css'
-
-window.katex = katex;
-
-const questionModules = {
-    toolbar: [
-        ['bold', 'italic', 'underline'],
-        [{ list: 'ordered' }, { list: 'bullet' }],
-        ['formula'],
-        ['clean'],
-    ],
-};
-
-const questionFormats = ['bold', 'italic', 'underline', 'list', 'bullet', 'formula'];
 
 const isQuillEmpty = (val) => !val || val === '<p><br></p>';
 
@@ -253,16 +237,11 @@ const AddQuestion = () => {
                     </div>
                     <input className='select-input' type="file" name='images' onChange={selectQuestionPic} accept='.png, .jpg, .jpeg, .webp' />
                 </label>}
-                <div className='question-quill-editor'>
-                    <ReactQuill
-                        theme="snow"
-                        value={question}
-                        onChange={setQuestion}
-                        modules={questionModules}
-                        formats={questionFormats}
-                        placeholder="Enter the question text here... Click Σ in the toolbar to insert a math formula."
-                    />
-                </div>
+                <RichTextEditor
+                    value={question}
+                    onChange={setQuestion}
+                    placeholder="Type your question here. Click Σ to insert a math formula visually."
+                />
                 {(questionType == 'Essay Question') ? <>
                     <div className="keyboard essay-answer">
                         <div className="essay-math-input">

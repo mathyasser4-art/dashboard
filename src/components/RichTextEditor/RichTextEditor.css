@@ -1,0 +1,74 @@
+.rich-text-editor {
+    width: 100%;
+    margin: 1rem 0;
+    border: 1px solid rgb(94, 93, 93);
+    border-radius: 5px;
+    overflow: hidden;
+    text-align: left;
+}
+
+/* ── Quill chrome ─────────────────────────────────────────────── */
+.rich-text-editor .ql-toolbar.ql-snow {
+    border: none;
+    border-bottom: 1px solid rgb(94, 93, 93);
+    background-color: #f8f8f8;
+}
+
+.rich-text-editor .ql-container.ql-snow {
+    border: none;
+    font-size: 1rem;
+}
+
+.rich-text-editor .ql-editor {
+    min-height: 130px;
+    line-height: 1.7;
+}
+
+.rich-text-editor .ql-editor.ql-blank::before {
+    color: #999;
+    font-style: normal;
+}
+
+/* ── mathquill4quill formula popup ───────────────────────────── */
+/* Give the MathQuill popup a clean look that fits the dashboard */
+.mq-editable-field,
+.mq-math-mode {
+    font-size: 1.1rem !important;
+}
+
+/* Operator buttons strip inside the formula popup */
+.mathquill4quill-operator-container {
+    background-color: #f8f8f8;
+    border-bottom: 1px solid #ddd;
+    padding: 4px 6px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+}
+
+.mathquill4quill-operator-container button {
+    padding: 3px 8px !important;
+    min-width: unset !important;
+    width: auto !important;
+    margin: 0 !important;
+    background: #fff;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.9rem;
+}
+
+.mathquill4quill-operator-container button:hover {
+    background-color: rgb(56, 56, 238);
+    color: #fff;
+    border-color: rgb(56, 56, 238);
+}
+
+/* History row */
+.mathquill4quill-history-container {
+    padding: 4px 6px;
+    background: #fafafa;
+    border-top: 1px solid #eee;
+    font-size: 0.85rem;
+    color: #555;
+}
