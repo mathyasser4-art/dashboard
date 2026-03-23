@@ -145,3 +145,33 @@ input[type="radio"]{
     color: red;
     cursor: pointer;
 }
+
+.essay-answer {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.8rem;
+    margin: 1rem 0;
+}
+
+.essay-math-input {
+    flex: 1;
+    border: 1px solid rgb(94, 93, 93);
+    border-radius: 5px;
+    overflow: hidden;
+    text-align: left;
+}
+
+.essay-answer > li {
+    position: static !important;
+    flex-shrink: 0;
+    margin-left: 0 !important;
+    margin-top: 0.25rem;
+    background-color: rgb(56, 56, 238);
+    color: #fff;
+    padding: 0rem 1rem;
+    padding-bottom: 0.2rem;
+    font-size: 2rem;
+    border-radius: 10px;
+    cursor: pointer;
+    list-style-type: none;
+}

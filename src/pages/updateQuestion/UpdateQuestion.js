@@ -33,14 +33,7 @@ const UpdateQuestion = () => {
     const [mcqAnswerFr, setMcqAnswerFr] = useState('')
     const [correctAnswer, setCorrectAnswer] = useState('')
 
-    // Keyboard Variable
-    const [isArabic, setIsArabic] = useState(true);
-    const [showKeyboard, setShowKeyboard] = useState(false);
-    const inputRef = useRef(null);
-    const keyboardRef = useRef(null);
-    const arabicDigits = ['٠', '١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩'];
-    const englishDigits = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'];
-    // Keyboard Variable
+    const answerRef = useRef(null);
 
     const { questionID, questionTypeID, unitID, questionTypeName, subjectID } = useParams()
     const navigate = useNavigate()
@@ -49,58 +42,6 @@ const UpdateQuestion = () => {
         getQuestion()
     }, []);
 
-    // Start Keyboard Func
-    const handleButtonClick = (digit) => {
-        setAnswer(prev => {
-            const newVal = prev + digit;
-            return newVal;
-        });
-    };
-
-    const toggleLanguage = () => {
-        setIsArabic(prev => !prev);
-    };
-
-    const handleInputFocus = () => {
-        setShowKeyboard(true);
-    };
-
-    // Hide Keyboard when press
-    useEffect(() => {
-        const handleClickOutside = (event) => {
-            if (
-                inputRef.current && !inputRef.current.contains(event.target) &&
-                keyboardRef.current && !keyboardRef.current.contains(event.target)
-            ) {
-                setShowKeyboard(false);
-            }
-        };
-
-        document.addEventListener('mousedown', handleClickOutside);
-        return () => {
-            document.removeEventListener('mousedown', handleClickOutside);
-        };
-    }, []);
-
-    const renderDigits = () => {
-        const digits = isArabic ? arabicDigits : englishDigits;
-        return digits.map((digit, index) => (
-            <button
-                key={index}
-                onClick={() => handleButtonClick(digit)}
-                className="digit-button"
-            >
-                {digit}
-            </button>
-        ));
-    };
-
-    const handleDelete = () => {
-        setAnswer(prev => prev.slice(0, -1));
-    };
-    // End Keyboard Func
-
-    // get all unit
     const getQuestion = async () => {
         await getQuestionDetails(questionID, setQuestionDetails, setLoading, setQuestion, setAllAnswer, setQuestionPoint, setQuestionType, setMcqAnswerFs, setMcqAnswerSe, setMcqAnswerTh, setMcqAnswerFr)
     }
@@ -118,8 +59,10 @@ const UpdateQuestion = () => {
     }
 
     const addAnswer = () => {
+        if (answer === '') return;
         setAllAnswer(current => [...current, answer]);
-        setAnswer('')
+        setAnswer('');
+        if (answerRef.current) answerRef.current();
     }
 
     const removeAnswer = (item) => {
@@ -203,27 +146,8 @@ const UpdateQuestion = () => {
                     <MathInput initialLatex={question} setValue={setQuestion} />
                 </div>
                 {(questionType == 'Essay') ? <div className="keyboard essay-answer">
-                    <div style={{ position: 'relative', maxWidth: '370px' }}>
-                        <input
-                            ref={inputRef}
-                            type="text"
-                            value={answer}
-                            onFocus={handleInputFocus}
-                            readOnly
-                            placeholder={isArabic ? 'أدخل الإجابة' : 'Enter the answer'}
-                            className="input-style"
-                        />
-                        {showKeyboard && (
-                            <div ref={keyboardRef} className="keyboard-container">
-                                {renderDigits()}
-                                <button onClick={handleDelete} className="digit-button btn-red">
-                                    x
-                                </button>
-                                <button onClick={toggleLanguage} className="toggle-btn">
-                                    {isArabic ? '123' : '١٢٣'}
-                                </button>
-                            </div>
-                        )}
+                    <div className="essay-math-input">
+                        <MathInput setClearRef={f => answerRef.current = f} setValue={setAnswer} />
                     </div>
                     <li onClick={addAnswer}>+</li>
                 </div> : (questionType == 'MCQ') ? <div className="keyboard mcq-answer d-flex">
