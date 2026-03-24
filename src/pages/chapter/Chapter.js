@@ -92,7 +92,7 @@ const Chapter = () => {
             {chapterDetails.questions?.map((item, index) => {
                 return (
                     <div key={item._id} className='question d-flex justify-content-space-between'>
-                        <p>{item.question}</p>
+                        <div className='question-text' dangerouslySetInnerHTML={{ __html: item.question }} />
                         <div>
                             <Link to={`/updateQuestion/${questionTypeName}/${item._id}/${questionTypeID}/${unitID}/${subjectID}`}><i className="fa fa-pencil icon" aria-hidden="true"></i></Link>
                             <i onClick={() => openDeleteQuestionPopup(item._id)} className="fa fa-trash-o" aria-hidden="true"></i>

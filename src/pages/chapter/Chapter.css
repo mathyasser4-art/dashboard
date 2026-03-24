@@ -29,8 +29,11 @@
     border-radius: 5px;
 }
 
-.question p{
+.question p,
+.question-text,
+.question-text p {
     color: rgb(56, 56, 238);
+    margin: 0;
 }
 
 .question i{
