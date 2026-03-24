@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react'
 import { useParams, Link } from 'react-router-dom'
-import mammoth from 'mammoth'
 import saveAiQuestion from '../../api/saveAiQuestion.api'
 import correctIcon from '../../correct-icon.png'
 import '../../reusable.css'
@@ -23,12 +22,6 @@ const fileToBase64 = (file) => new Promise((resolve, reject) => {
     reader.onerror = () => reject(new Error('Failed to read the selected file.'))
     reader.readAsDataURL(file)
 })
-
-const extractWordText = async (file) => {
-    const arrayBuffer = await file.arrayBuffer()
-    const result = await mammoth.extractRawText({ arrayBuffer })
-    return result.value.trim()
-}
 
 const buildPrompt = (
     questionType,
@@ -111,25 +104,13 @@ const buildGeminiParts = async ({
         return parts
     }
 
-    const isWordDocument = [
-        'application/msword',
-        'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
-    ].includes(attachmentFile.type)
-
-    if (isWordDocument) {
-        const extractedText = await extractWordText(attachmentFile)
-        if (!extractedText) {
-            throw new Error('The Word file appears to be empty or unreadable.')
-        }
-
-        parts.push({
-            text: `Attached Word document content:\n${extractedText.slice(0, 30000)}`
-        })
-
-        return parts
-    }
-
-    const normalizedMimeType = attachmentFile.type || 'application/octet-stream'
+    const normalizedMimeType = attachmentFile.type || (
+        attachmentFile.name.toLowerCase().endsWith('.doc')
+            ? 'application/msword'
+            : attachmentFile.name.toLowerCase().endsWith('.docx')
+                ? 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+                : 'application/octet-stream'
+    )
     const base64Data = await fileToBase64(attachmentFile)
 
     parts.push({
