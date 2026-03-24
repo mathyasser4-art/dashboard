@@ -7,9 +7,8 @@ import katex from 'katex';
 import 'react-quill/dist/quill.snow.css';
 import 'katex/dist/katex.min.css';
 import 'mathquill/build/mathquill.css';
-import 'mathquill4quill/mathquill4quill.css';
 
-import mathquill4quill from 'mathquill4quill';
+import mathquill4quill from '../../mathquill4quill.vendor';
 
 // Must import AFTER jquery setup (sets window.jQuery + window.MathQuill)
 import '../../mathquillSetup';
