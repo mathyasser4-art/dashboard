@@ -7,7 +7,16 @@ import './AiGenerate.css'
 
 const GEMINI_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent'
 
-const buildPrompt = (questionType, topic, difficulty, count, chapterName) => {
+const buildPrompt = (
+    questionType,
+    topic,
+    count,
+    chapterName,
+    numberOfRows,
+    numberOfDigits,
+    operations,
+    skillLevel
+) => {
     const typeLabel = questionType === 'MCQ' ? 'multiple-choice (MCQ)' : 'open-ended essay'
     const mcqShape = `{
   "question": "Question text here",
@@ -21,18 +30,27 @@ const buildPrompt = (questionType, topic, difficulty, count, chapterName) => {
   "questionPoints": 2
 }`
     const shape = questionType === 'MCQ' ? mcqShape : essayShape
+    const selectedOperations = operations.length > 0 ? operations.join(', ') : 'addition (+)'
+    const selectedSkillLevel = skillLevel.trim() || 'basic (direct)'
 
-    return `You are an expert educational content creator for math and science subjects.
-Generate exactly ${count} ${typeLabel} questions about "${topic}" for the chapter "${chapterName}".
-Difficulty level: ${difficulty}.
+    return `You are an expert abacus worksheet creator.
+Generate exactly ${count} ${typeLabel} abacus questions for the chapter "${chapterName}".
+
+ABACUS REQUIREMENTS:
+- Topic / extra instructions: "${topic}"
+- Number of rows per question: ${numberOfRows}
+- Number of digits: ${numberOfDigits}
+- Allowed operations: ${selectedOperations}
+- Abacus skill / level: ${selectedSkillLevel}
 
 STRICT RULES:
 - Return ONLY a valid JSON object. No markdown, no code blocks, no explanation.
-- Each question must be clear, educational, and appropriate for students.
+- Every generated question must be specifically for abacus practice.
+- Respect the requested row count, digit count, operations, and abacus skill level.
+- Use plain text only.
 - For MCQ: provide exactly 3 wrong answers and 1 correct answer.
 - For Essay: provide 1-3 accepted answer variations.
 - questionPoints should be between 1 and 5.
-- Use plain text. Do not use LaTeX or special math symbols.
 
 Return this exact JSON structure:
 {
@@ -56,7 +74,10 @@ const AiGenerate = () => {
     const [apiKey, setApiKey] = useState('')
     const [topic, setTopic] = useState('')
     const [questionType, setQuestionType] = useState('MCQ')
-    const [difficulty, setDifficulty] = useState('Medium')
+    const [numberOfRows, setNumberOfRows] = useState(3)
+    const [numberOfDigits, setNumberOfDigits] = useState(1)
+    const [operations, setOperations] = useState(['+'])
+    const [skillLevel, setSkillLevel] = useState('Basic (direct)')
     const [count, setCount] = useState(10)
     const [status, setStatus] = useState('idle') // idle | generating | saving | done | error
     const [progress, setProgress] = useState({ current: 0, total: 0 })
@@ -71,8 +92,20 @@ const AiGenerate = () => {
     const validate = () => {
         if (!apiKey.trim()) { setErrorMessage('API key is required'); return false }
         if (!topic.trim()) { setErrorMessage('Topic is required'); return false }
+        if (!numberOfRows || numberOfRows < 1 || numberOfRows > 20) { setErrorMessage('Enter a number of rows between 1 and 20'); return false }
+        if (!numberOfDigits || numberOfDigits < 1 || numberOfDigits > 10) { setErrorMessage('Enter a number of digits between 1 and 10'); return false }
+        if (!operations.length) { setErrorMessage('Select at least one operation'); return false }
+        if (!skillLevel.trim()) { setErrorMessage('Skill level is required'); return false }
         if (!count || count < 1 || count > 100) { setErrorMessage('Enter a number of questions between 1 and 100'); return false }
         return true
+    }
+
+    const handleOperationChange = (operation) => {
+        setOperations(prev =>
+            prev.includes(operation)
+                ? prev.filter(item => item !== operation)
+                : [...prev, operation]
+        )
     }
 
     const handleGenerate = async () => {
@@ -87,7 +120,16 @@ const AiGenerate = () => {
         // Step 1: Call Gemini API
         let questions = []
         try {
-            const prompt = buildPrompt(questionType, topic, difficulty, count, decodeURIComponent(chapterName))
+            const prompt = buildPrompt(
+                questionType,
+                topic,
+                count,
+                decodeURIComponent(chapterName),
+                numberOfRows,
+                numberOfDigits,
+                operations,
+                skillLevel
+            )
             const response = await fetch(`${GEMINI_URL}?key=${apiKey.trim()}`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -251,7 +293,7 @@ const AiGenerate = () => {
                     <label className="ai-label">Topic / Description</label>
                     <textarea
                         className="ai-textarea"
-                        placeholder="Describe what the questions should be about (e.g. Linear equations, Chapter 3 exercises...)"
+                        placeholder="Describe the abacus worksheet you want and add any extra notes for the AI..."
                         value={topic}
                         onChange={e => setTopic(e.target.value)}
                         rows={3}
@@ -285,23 +327,73 @@ const AiGenerate = () => {
                     </div>
                 </div>
 
-                {/* Difficulty */}
+                {/* Number of Rows */}
                 <div className="ai-field">
-                    <label className="ai-label">Difficulty</label>
-                    <div className="ai-radio-group">
-                        {['Easy', 'Medium', 'Hard'].map(d => (
-                            <label key={d} className={`ai-radio-option ${difficulty === d ? 'ai-radio-selected' : ''}`}>
+                    <label className="ai-label">Number of Rows</label>
+                    <input
+                        type="number"
+                        className="ai-input ai-count-input"
+                        min={1}
+                        max={20}
+                        value={numberOfRows}
+                        onChange={e => setNumberOfRows(Number(e.target.value))}
+                    />
+                </div>
+
+                {/* Number of Digits */}
+                <div className="ai-field">
+                    <label className="ai-label">Number of Digits</label>
+                    <input
+                        type="number"
+                        className="ai-input ai-count-input"
+                        min={1}
+                        max={10}
+                        value={numberOfDigits}
+                        onChange={e => setNumberOfDigits(Number(e.target.value))}
+                    />
+                </div>
+
+                {/* Operations */}
+                <div className="ai-field">
+                    <label className="ai-label">Operations</label>
+                    <div className="ai-checkbox-group">
+                        {[
+                            { value: '+', label: 'Addition (+)' },
+                            { value: '-', label: 'Subtraction (-)' },
+                            { value: 'x', label: 'Multiplication (x)' },
+                            { value: 'divide', label: 'Division (divide)' }
+                        ].map(operation => (
+                            <label
+                                key={operation.value}
+                                className={`ai-radio-option ${operations.includes(operation.value) ? 'ai-radio-selected' : ''}`}
+                            >
                                 <input
-                                    type="radio"
-                                    name="difficulty"
-                                    value={d}
-                                    checked={difficulty === d}
-                                    onChange={() => setDifficulty(d)}
+                                    type="checkbox"
+                                    name="operations"
+                                    value={operation.value}
+                                    checked={operations.includes(operation.value)}
+                                    onChange={() => handleOperationChange(operation.value)}
                                 />
-                                {d}
+                                {operation.label}
                             </label>
                         ))}
                     </div>
+                </div>
+
+                {/* Skill Level */}
+                <div className="ai-field">
+                    <label className="ai-label">Abacus Skill / Level</label>
+                    <select
+                        className="ai-input"
+                        value={skillLevel}
+                        onChange={e => setSkillLevel(e.target.value)}
+                    >
+                        <option value="Basic (direct)">Basic (direct)</option>
+                        <option value="Friends of 5">Friends of 5</option>
+                        <option value="Friends of 10">Friends of 10</option>
+                        <option value="Friends of 5 and 10">Friends of 5 and 10</option>
+                        <option value="Other abacus skills">Other abacus skills</option>
+                    </select>
                 </div>
 
                 {/* Count */}
