@@ -18,7 +18,7 @@
     "katex": "^0.16.9",
     "jquery": "^3.7.1",
     "mathquill": "^0.10.1",
-    "mathquill4quill": "^1.0.3",
+    "mathquill4quill": "1.0.2",
     "web-vitals": "^2.1.4"
   },
   "scripts": {
