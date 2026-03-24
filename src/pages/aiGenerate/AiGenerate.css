@@ -131,6 +131,80 @@
     flex-wrap: wrap;
 }
 
+/* ── Checkbox options (multi-select, same pill style) ────────────── */
+.ai-checkbox-option {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1.1rem;
+    border: 2px solid #ddd;
+    border-radius: 30px;
+    cursor: pointer;
+    font-size: 0.95rem;
+    color: rgb(56, 56, 56);
+    transition: border-color 0.2s, background-color 0.2s;
+    user-select: none;
+}
+
+.ai-checkbox-option input[type="checkbox"] {
+    width: 1rem;
+    height: 1rem;
+    margin: 0;
+    accent-color: rgb(3, 3, 173);
+    cursor: pointer;
+}
+
+.ai-checkbox-selected {
+    border-color: rgb(3, 3, 173);
+    background-color: rgb(240, 240, 255);
+    color: rgb(3, 3, 173);
+    font-weight: 600;
+}
+
+/* ── Rows stepper control ────────────────────────────────────────── */
+.ai-rows-control {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    width: fit-content;
+    border: 1px solid rgb(94, 93, 93);
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.ai-rows-btn {
+    background: rgb(240, 240, 255);
+    border: none;
+    color: rgb(3, 3, 173);
+    font-size: 1.3rem;
+    font-weight: 700;
+    width: 42px;
+    height: 42px;
+    cursor: pointer;
+    transition: background-color 0.15s;
+    line-height: 1;
+}
+
+.ai-rows-btn:hover {
+    background-color: rgb(220, 220, 255);
+}
+
+.ai-rows-value {
+    min-width: 48px;
+    text-align: center;
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: rgb(3, 3, 173);
+    padding: 0 0.5rem;
+}
+
+/* ── Field hint ──────────────────────────────────────────────────── */
+.ai-field-hint {
+    font-size: 0.8rem;
+    font-weight: 400;
+    color: #999;
+}
+
 .ai-radio-option {
     display: flex;
     align-items: center;
