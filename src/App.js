@@ -10,6 +10,7 @@ import UpdateQuestion from './pages/updateQuestion/UpdateQuestion'
 import Subject from './pages/subject/Subject'
 import School from './pages/school/School'
 import Users from './pages/users/Users'
+import AiGenerate from './pages/aiGenerate/AiGenerate'
 
 function App() {
   useEffect(() => {
@@ -45,6 +46,7 @@ function App() {
         <Route path='/updateQuestion/:questionTypeName/:questionID/:questionTypeID/:unitID/:subjectID' element={isAuth ? <UpdateQuestion /> : <Navigate to='/auth' />} />
         <Route path='/school' element={isAuth ? <School /> : <Navigate to='/auth' />} />
         <Route path='/users' element={isAuth ? <Users /> : <Navigate to='/auth' />} />
+        <Route path='/aiGenerate/:questionTypeName/:chapterName/:chapterID/:questionTypeID/:unitID/:subjectID' element={isAuth ? <AiGenerate /> : <Navigate to='/auth' />} />
       </Routes>
     </>
   );

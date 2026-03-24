@@ -84,6 +84,7 @@ const Chapter = () => {
                 <p className='chapter-head-name'>{chapterDetails.chapterName}</p>
                 <div className='chapter-icon'>
                     <Link to={`/addQuestion/${questionTypeName}/${chapterDetails.chapterName}/${chapterID}/${questionTypeID}/${unitID}/${subjectID}/last`}><i className="fa fa-plus icon" aria-hidden="true"></i></Link>
+                    <Link to={`/aiGenerate/${questionTypeName}/${encodeURIComponent(chapterDetails.chapterName)}/${chapterID}/${questionTypeID}/${unitID}/${subjectID}`} title="Generate questions with AI"><i className="fa fa-magic icon ai-icon" aria-hidden="true"></i></Link>
                     <i onClick={() => openUpdatePopup(chapterDetails.chapterName)} className="fa fa-pencil" aria-hidden="true"></i>
                     <i onClick={openDeleteChapterPopup} className="fa fa-trash-o" aria-hidden="true"></i>
                 </div>
