@@ -108,7 +108,7 @@ const generateAddSubQuestion = (digits, rows, ops, level) => {
 
     return {
         question: questionHtml,
-        correctAnswer: String(runningTotal),
+        answer: [String(runningTotal)],
         questionPoints: 1,
         type: 'Essay',
     }
@@ -119,7 +119,7 @@ const generateMultiplyQuestion = (digits) => {
     const b = randomInt(2, 9) // single-digit multiplier
     return {
         question: `${a} × ${b}`,
-        correctAnswer: String(a * b),
+        answer: [String(a * b)],
         questionPoints: 1,
         type: 'Essay',
     }
@@ -131,7 +131,7 @@ const generateDivideQuestion = (digits) => {
     const dividend = quotient * divisor
     return {
         question: `${dividend} ÷ ${divisor}`,
-        correctAnswer: String(quotient),
+        answer: [String(quotient)],
         questionPoints: 1,
         type: 'Essay',
     }
