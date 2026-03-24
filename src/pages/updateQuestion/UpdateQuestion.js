@@ -6,11 +6,21 @@ import addAnswerPic from '../../api/addAnswerPic.api'
 import updateAutoCorrect from '../../api/updateAutoCorrect.api'
 import correctIcon from '../../correct-icon.png'
 import MathInput from "react-math-keyboard";
-import RichTextEditor from '../../components/RichTextEditor/RichTextEditor';
 import '../../reusable.css'
 import './UpdateQuestion.css'
 
-const isQuillEmpty = (val) => !val || val === '<p><br></p>';
+const stripHtml = (html) => {
+    if (!html) return ''
+    return html
+        .replace(/<br\s*\/?>/gi, '\n')
+        .replace(/<\/p>/gi, '\n')
+        .replace(/<[^>]+>/g, '')
+        .replace(/&nbsp;/g, ' ')
+        .replace(/&amp;/g, '&')
+        .replace(/&lt;/g, '<')
+        .replace(/&gt;/g, '>')
+        .trim()
+}
 
 const UpdateQuestion = () => {
     const [serverOperationError, setserverOperationError] = useState(null)
@@ -37,6 +47,7 @@ const UpdateQuestion = () => {
     const [correctAnswer, setCorrectAnswer] = useState('')
 
     const answerRef = useRef(null);
+    const questionStripped = useRef(false)
 
     const { questionID, questionTypeID, unitID, questionTypeName, subjectID } = useParams()
     const navigate = useNavigate()
@@ -44,6 +55,14 @@ const UpdateQuestion = () => {
     useEffect(() => {
         getQuestion()
     }, []);
+
+    // Strip HTML tags from question loaded from backend once on load
+    useEffect(() => {
+        if (!loading && question && !questionStripped.current) {
+            setQuestion(stripHtml(question))
+            questionStripped.current = true
+        }
+    }, [loading, question])
 
     const getQuestion = async () => {
         await getQuestionDetails(questionID, setQuestionDetails, setLoading, setQuestion, setAllAnswer, setQuestionPoint, setQuestionType, setMcqAnswerFs, setMcqAnswerSe, setMcqAnswerTh, setMcqAnswerFr)
@@ -73,7 +92,7 @@ const UpdateQuestion = () => {
     }
 
     const handleUpadteQuestion = () => {
-        if (isQuillEmpty(question) || questionPoint === '' || allAnswer.length === 0 && questionType === 'Essay'
+        if (!question.trim() || questionPoint === '' || allAnswer.length === 0 && questionType === 'Essay'
             || mcqAnswerFr === '' && questionType === 'MCQ' || mcqAnswerFs === '' && questionType === 'MCQ'
             || mcqAnswerSe === '' && questionType === 'MCQ' || mcqAnswerTh === '' && questionType === 'MCQ') {
             setserverOperationError('Enter the question data first!')
@@ -145,10 +164,12 @@ const UpdateQuestion = () => {
                     <p>This question is {questionDetails.autoCorrect ? 'Auto Correct' : 'Not Auto Correct'}</p>
                     {autoCorrectLoading ? <p>Waiting...</p> : <p onClick={handleUpadteAutoCorrect}>(Chanage it to {questionDetails.autoCorrect ? 'Not Auto Correct' : 'Auto Correct'})</p>}
                 </div>
-                <RichTextEditor
+                <textarea
+                    rows={4}
+                    placeholder="Type your question here"
                     value={question}
-                    onChange={setQuestion}
-                    placeholder="Type your question here. Click Σ to insert a math formula visually."
+                    onChange={e => setQuestion(e.target.value)}
+                    style={{ boxSizing: 'border-box', outline: 'none', resize: 'vertical', fontFamily: 'inherit', fontSize: '1rem' }}
                 />
                 {(questionType == 'Essay') ? <div className="keyboard essay-answer">
                     <div className="essay-math-input">

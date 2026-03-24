@@ -5,11 +5,8 @@ import addAnswerPic from '../../api/addAnswerPic.api'
 import addGraphQuestion from '../../api/addGraphQuestion.api';
 import correctIcon from '../../correct-icon.png'
 import MathInput from "react-math-keyboard";
-import RichTextEditor from '../../components/RichTextEditor/RichTextEditor';
 import '../../reusable.css';
 import './AddQuestion.css'
-
-const isQuillEmpty = (val) => !val || val === '<p><br></p>';
 
 const AddQuestion = () => {
     const [serverOperationError, setserverOperationError] = useState(null)
@@ -102,7 +99,7 @@ const AddQuestion = () => {
     }
 
     const addNewQuestion = () => {
-        if (isQuillEmpty(question) || questionPoint === '' || allAnswer.length === 0 && questionType === 'Essay Question'
+        if (!question.trim() || questionPoint === '' || allAnswer.length === 0 && questionType === 'Essay Question'
             || mcqAnswerFr === '' && questionType === 'MCQ Question' || mcqAnswerFs === '' && questionType === 'MCQ Question'
             || mcqAnswerSe === '' && questionType === 'MCQ Question' || mcqAnswerTh === '' && questionType === 'MCQ Question') {
             setserverOperationError('Enter the question data first!')
@@ -237,10 +234,12 @@ const AddQuestion = () => {
                     </div>
                     <input className='select-input' type="file" name='images' onChange={selectQuestionPic} accept='.png, .jpg, .jpeg, .webp' />
                 </label>}
-                <RichTextEditor
+                <textarea
+                    rows={4}
+                    placeholder="Type your question here"
                     value={question}
-                    onChange={setQuestion}
-                    placeholder="Type your question here. Click Σ to insert a math formula visually."
+                    onChange={e => setQuestion(e.target.value)}
+                    style={{ boxSizing: 'border-box', outline: 'none', resize: 'vertical', fontFamily: 'inherit', fontSize: '1rem' }}
                 />
                 {(questionType == 'Essay Question') ? <>
                     <div className="keyboard essay-answer">
