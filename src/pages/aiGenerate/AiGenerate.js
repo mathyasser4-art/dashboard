@@ -1,11 +1,34 @@
 import React, { useState, useEffect } from 'react'
-import { useParams, Link, useNavigate } from 'react-router-dom'
+import { useParams, Link } from 'react-router-dom'
+import mammoth from 'mammoth'
 import saveAiQuestion from '../../api/saveAiQuestion.api'
 import correctIcon from '../../correct-icon.png'
 import '../../reusable.css'
 import './AiGenerate.css'
 
 const GEMINI_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent'
+const ACCEPTED_FILE_TYPES = '.pdf,.doc,.docx,.png,.jpg,.jpeg,.webp'
+
+const fileToBase64 = (file) => new Promise((resolve, reject) => {
+    const reader = new FileReader()
+    reader.onload = () => {
+        const result = reader.result || ''
+        const base64 = String(result).split(',')[1]
+        if (!base64) {
+            reject(new Error('Failed to convert the selected file.'))
+            return
+        }
+        resolve(base64)
+    }
+    reader.onerror = () => reject(new Error('Failed to read the selected file.'))
+    reader.readAsDataURL(file)
+})
+
+const extractWordText = async (file) => {
+    const arrayBuffer = await file.arrayBuffer()
+    const result = await mammoth.extractRawText({ arrayBuffer })
+    return result.value.trim()
+}
 
 const buildPrompt = (
     questionType,
@@ -15,7 +38,8 @@ const buildPrompt = (
     numberOfRows,
     numberOfDigits,
     operations,
-    skillLevel
+    skillLevel,
+    attachmentContext
 ) => {
     const typeLabel = questionType === 'MCQ' ? 'multiple-choice (MCQ)' : 'open-ended essay'
     const mcqShape = `{
@@ -33,7 +57,7 @@ const buildPrompt = (
     const selectedOperations = operations.length > 0 ? operations.join(', ') : 'addition (+)'
     const selectedSkillLevel = skillLevel.trim() || 'basic (direct)'
 
-    return `You are an expert abacus worksheet creator.
+    return `You are an expert abacus worksheet creator and question extractor.
 Generate exactly ${count} ${typeLabel} abacus questions for the chapter "${chapterName}".
 
 ABACUS REQUIREMENTS:
@@ -43,6 +67,13 @@ ABACUS REQUIREMENTS:
 - Allowed operations: ${selectedOperations}
 - Abacus skill / level: ${selectedSkillLevel}
 
+FILE HANDLING RULES:
+- If an attached file contains existing questions, read them carefully and convert them into dashboard-ready questions.
+- Preserve the meaning of the source questions from the file, but normalize wording if needed.
+- If the file includes answer choices or answers, use them to produce the correct dashboard JSON.
+- If the file contains fewer than ${count} usable questions, create the remaining questions in the same style and difficulty.
+- If no file is attached, generate all questions from the topic instructions only.
+
 STRICT RULES:
 - Return ONLY a valid JSON object. No markdown, no code blocks, no explanation.
 - Every generated question must be specifically for abacus practice.
@@ -51,6 +82,9 @@ STRICT RULES:
 - For MCQ: provide exactly 3 wrong answers and 1 correct answer.
 - For Essay: provide 1-3 accepted answer variations.
 - questionPoints should be between 1 and 5.
+
+ATTACHMENT CONTEXT:
+${attachmentContext || 'No attachment was provided.'}
 
 Return this exact JSON structure:
 {
@@ -67,9 +101,49 @@ const stripMarkdown = (text) => {
         .trim()
 }
 
+const buildGeminiParts = async ({
+    prompt,
+    attachmentFile
+}) => {
+    const parts = [{ text: prompt }]
+
+    if (!attachmentFile) {
+        return parts
+    }
+
+    const isWordDocument = [
+        'application/msword',
+        'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+    ].includes(attachmentFile.type)
+
+    if (isWordDocument) {
+        const extractedText = await extractWordText(attachmentFile)
+        if (!extractedText) {
+            throw new Error('The Word file appears to be empty or unreadable.')
+        }
+
+        parts.push({
+            text: `Attached Word document content:\n${extractedText.slice(0, 30000)}`
+        })
+
+        return parts
+    }
+
+    const normalizedMimeType = attachmentFile.type || 'application/octet-stream'
+    const base64Data = await fileToBase64(attachmentFile)
+
+    parts.push({
+        inlineData: {
+            mimeType: normalizedMimeType,
+            data: base64Data
+        }
+    })
+
+    return parts
+}
+
 const AiGenerate = () => {
     const { chapterID, chapterName, questionTypeID, unitID, questionTypeName, subjectID } = useParams()
-    const navigate = useNavigate()
 
     const [apiKey, setApiKey] = useState('')
     const [topic, setTopic] = useState('')
@@ -79,6 +153,7 @@ const AiGenerate = () => {
     const [operations, setOperations] = useState(['+'])
     const [skillLevel, setSkillLevel] = useState('Basic (direct)')
     const [count, setCount] = useState(10)
+    const [attachmentFile, setAttachmentFile] = useState(null)
     const [status, setStatus] = useState('idle') // idle | generating | saving | done | error
     const [progress, setProgress] = useState({ current: 0, total: 0 })
     const [savedCount, setSavedCount] = useState(0)
@@ -91,12 +166,18 @@ const AiGenerate = () => {
 
     const validate = () => {
         if (!apiKey.trim()) { setErrorMessage('API key is required'); return false }
-        if (!topic.trim()) { setErrorMessage('Topic is required'); return false }
+        if (!topic.trim() && !attachmentFile) { setErrorMessage('Add a topic or attach a file'); return false }
         if (!numberOfRows || numberOfRows < 1 || numberOfRows > 20) { setErrorMessage('Enter a number of rows between 1 and 20'); return false }
         if (!numberOfDigits || numberOfDigits < 1 || numberOfDigits > 10) { setErrorMessage('Enter a number of digits between 1 and 10'); return false }
         if (!operations.length) { setErrorMessage('Select at least one operation'); return false }
         if (!skillLevel.trim()) { setErrorMessage('Skill level is required'); return false }
         if (!count || count < 1 || count > 100) { setErrorMessage('Enter a number of questions between 1 and 100'); return false }
+
+        if (attachmentFile && attachmentFile.size > 20 * 1024 * 1024) {
+            setErrorMessage('Attached files must be smaller than 20 MB')
+            return false
+        }
+
         return true
     }
 
@@ -108,16 +189,62 @@ const AiGenerate = () => {
         )
     }
 
+    const handleFileChange = async (event) => {
+        const file = event.target.files?.[0] || null
+        setErrorMessage('')
+
+        if (!file) {
+            setAttachmentFile(null)
+            return
+        }
+
+        const allowedMimeTypes = [
+            'application/pdf',
+            'application/msword',
+            'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+            'image/png',
+            'image/jpeg',
+            'image/jpg',
+            'image/webp'
+        ]
+
+        const hasSupportedExtension = /\.(pdf|doc|docx|png|jpe?g|webp)$/i.test(file.name)
+
+        if (!allowedMimeTypes.includes(file.type) && !hasSupportedExtension) {
+            event.target.value = ''
+            setAttachmentFile(null)
+            setErrorMessage('Please attach a PDF, Word, or image file.')
+            return
+        }
+
+        try {
+            if (file.name.toLowerCase().endsWith('.doc') && file.type !== 'application/msword') {
+                const arrayBuffer = await file.arrayBuffer()
+                const repairedFile = new File(
+                    [arrayBuffer],
+                    file.name,
+                    { type: 'application/msword' }
+                )
+                setAttachmentFile(repairedFile)
+                return
+            }
+
+            setAttachmentFile(file)
+        } catch (error) {
+            event.target.value = ''
+            setAttachmentFile(null)
+            setErrorMessage('Failed to prepare the selected file.')
+        }
+    }
+
     const handleGenerate = async () => {
         if (!validate()) return
         setErrorMessage('')
 
-        // Save API key to localStorage for convenience
         localStorage.setItem('gemini_api_key', apiKey.trim())
 
         setStatus('generating')
 
-        // Step 1: Call Gemini API
         let questions = []
         try {
             const prompt = buildPrompt(
@@ -128,13 +255,22 @@ const AiGenerate = () => {
                 numberOfRows,
                 numberOfDigits,
                 operations,
-                skillLevel
+                skillLevel,
+                attachmentFile
+                    ? `A file named "${attachmentFile.name}" is attached. Read it and use it as the primary question source when possible.`
+                    : ''
             )
+
+            const parts = await buildGeminiParts({
+                prompt,
+                attachmentFile
+            })
+
             const response = await fetch(`${GEMINI_URL}?key=${apiKey.trim()}`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    contents: [{ parts: [{ text: prompt }] }],
+                    contents: [{ parts }],
                     generationConfig: { temperature: 0.7, maxOutputTokens: 8192 }
                 })
             })
@@ -152,10 +288,9 @@ const AiGenerate = () => {
             questions = parsed.questions || []
 
             if (!Array.isArray(questions) || questions.length === 0) {
-                throw new Error('AI returned no questions. Try a more specific topic.')
+                throw new Error('AI returned no questions. Try a more specific topic or a clearer file.')
             }
 
-            // Tag each question with its type
             questions = questions.map(q => ({ ...q, type: questionType }))
         } catch (err) {
             setStatus('error')
@@ -163,7 +298,6 @@ const AiGenerate = () => {
             return
         }
 
-        // Step 2: Save questions sequentially
         setStatus('saving')
         setProgress({ current: 0, total: questions.length })
 
@@ -174,10 +308,8 @@ const AiGenerate = () => {
                 await saveAiQuestion(questions[i], chapterID)
                 saved++
             } catch (e) {
-                // Continue saving remaining even if one fails
                 console.error(`Failed to save question ${i + 1}:`, e)
             }
-            // Small delay to avoid overwhelming the backend
             await new Promise(r => setTimeout(r, 300))
         }
 
@@ -196,7 +328,6 @@ const AiGenerate = () => {
         ? Math.round((progress.current / progress.total) * 100)
         : 0
 
-    // ── DONE screen ──────────────────────────────────────────────────────────
     if (status === 'done') {
         return (
             <div className="ai-generate-page d-flex justify-content-center align-items-center">
@@ -217,7 +348,6 @@ const AiGenerate = () => {
         )
     }
 
-    // ── GENERATING / SAVING screen ───────────────────────────────────────────
     if (status === 'generating' || status === 'saving') {
         return (
             <div className="ai-generate-page d-flex justify-content-center align-items-center">
@@ -246,11 +376,9 @@ const AiGenerate = () => {
         )
     }
 
-    // ── IDLE / ERROR form ────────────────────────────────────────────────────
     return (
         <div className="ai-generate-page">
             <div className="ai-form-container">
-                {/* Header */}
                 <div className="ai-header">
                     <div className="ai-header-icon">🤖</div>
                     <div>
@@ -263,7 +391,6 @@ const AiGenerate = () => {
 
                 {errorMessage && <p className="text-error ai-error">{errorMessage}</p>}
 
-                {/* API Key */}
                 <div className="ai-field">
                     <label className="ai-label">
                         Gemini API Key
@@ -288,7 +415,6 @@ const AiGenerate = () => {
                     )}
                 </div>
 
-                {/* Topic */}
                 <div className="ai-field">
                     <label className="ai-label">Topic / Description</label>
                     <textarea
@@ -298,9 +424,39 @@ const AiGenerate = () => {
                         onChange={e => setTopic(e.target.value)}
                         rows={3}
                     />
+                    <p className="ai-field-help">
+                        You can write instructions here, attach a file below, or use both together.
+                    </p>
                 </div>
 
-                {/* Question Type */}
+                <div className="ai-field">
+                    <label className="ai-label">Attach questions file</label>
+                    <label className="ai-upload-box">
+                        <input
+                            type="file"
+                            className="ai-file-input"
+                            accept={ACCEPTED_FILE_TYPES}
+                            onChange={handleFileChange}
+                        />
+                        <span className="ai-upload-title">Upload PDF, Word, or image</span>
+                        <span className="ai-upload-subtitle">
+                            Supported: PDF, DOC, DOCX, PNG, JPG, JPEG, WEBP
+                        </span>
+                    </label>
+                    {attachmentFile && (
+                        <div className="ai-file-pill">
+                            <span className="ai-file-name">{attachmentFile.name}</span>
+                            <button
+                                type="button"
+                                className="ai-file-remove"
+                                onClick={() => setAttachmentFile(null)}
+                            >
+                                Remove
+                            </button>
+                        </div>
+                    )}
+                </div>
+
                 <div className="ai-field">
                     <label className="ai-label">Question Type</label>
                     <div className="ai-radio-group">
@@ -327,7 +483,6 @@ const AiGenerate = () => {
                     </div>
                 </div>
 
-                {/* Number of Rows */}
                 <div className="ai-field">
                     <label className="ai-label">Number of Rows</label>
                     <input
@@ -340,7 +495,6 @@ const AiGenerate = () => {
                     />
                 </div>
 
-                {/* Number of Digits */}
                 <div className="ai-field">
                     <label className="ai-label">Number of Digits</label>
                     <input
@@ -353,7 +507,6 @@ const AiGenerate = () => {
                     />
                 </div>
 
-                {/* Operations */}
                 <div className="ai-field">
                     <label className="ai-label">Operations</label>
                     <div className="ai-checkbox-group">
@@ -380,7 +533,6 @@ const AiGenerate = () => {
                     </div>
                 </div>
 
-                {/* Skill Level */}
                 <div className="ai-field">
                     <label className="ai-label">Abacus Skill / Level</label>
                     <select
@@ -396,7 +548,6 @@ const AiGenerate = () => {
                     </select>
                 </div>
 
-                {/* Count */}
                 <div className="ai-field">
                     <label className="ai-label">Number of Questions</label>
                     <input
@@ -409,10 +560,9 @@ const AiGenerate = () => {
                     />
                 </div>
 
-                {/* Actions */}
                 <div className="ai-actions d-flex">
                     <button className="button ai-generate-btn" onClick={handleGenerate}>
-                        🤖 Generate &amp; Save All Questions
+                        🤖 Generate & Save All Questions
                     </button>
                     <Link to={`/chapter/${questionTypeName}/${chapterID}/${questionTypeID}/${unitID}/${subjectID}`}>
                         <button className="button cancel-button">Cancel</button>

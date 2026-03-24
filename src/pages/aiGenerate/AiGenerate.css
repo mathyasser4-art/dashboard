@@ -124,6 +124,73 @@
     box-shadow: 0 0 0 3px rgba(3, 3, 173, 0.1);
 }
 
+.ai-field-help {
+    margin-top: 0.45rem;
+    font-size: 0.85rem;
+    color: #666;
+}
+
+.ai-upload-box {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+    border: 2px dashed rgb(171, 171, 214);
+    border-radius: 12px;
+    padding: 1rem 1.1rem;
+    background-color: rgb(248, 248, 255);
+    cursor: pointer;
+    transition: border-color 0.2s, background-color 0.2s;
+}
+
+.ai-upload-box:hover {
+    border-color: rgb(3, 3, 173);
+    background-color: rgb(242, 242, 255);
+}
+
+.ai-file-input {
+    display: none;
+}
+
+.ai-upload-title {
+    font-weight: 700;
+    color: rgb(3, 3, 173);
+}
+
+.ai-upload-subtitle {
+    font-size: 0.88rem;
+    color: #666;
+}
+
+.ai-file-pill {
+    margin-top: 0.8rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    padding: 0.7rem 0.9rem;
+    border-radius: 10px;
+    background-color: rgb(240, 240, 255);
+    border: 1px solid rgb(209, 209, 250);
+}
+
+.ai-file-name {
+    font-size: 0.92rem;
+    color: rgb(56, 56, 56);
+    word-break: break-word;
+}
+
+.ai-file-remove {
+    border: none;
+    background: transparent;
+    color: rgb(199, 0, 0);
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.ai-file-remove:hover {
+    text-decoration: underline;
+}
+
 /* ── Radio groups ────────────────────────────────────────────────── */
 .ai-radio-group,
 .ai-checkbox-group {
