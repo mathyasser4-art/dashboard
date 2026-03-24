@@ -11,7 +11,7 @@ const saveAiQuestion = (questionData, chapterID) => {
     const data = new FormData()
 
     // Wrap question text in <p> to match Quill HTML format
-    data.append('question', `<p>${questionData.question}</p>`)
+    data.append('question', questionData.question)
     data.append('questionPoints', questionData.questionPoints || 2)
     data.append('chapter', chapterID)
     data.append('index', 'last')

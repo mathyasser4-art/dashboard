@@ -100,11 +100,11 @@ const generateAddSubQuestion = (digits, rows, ops, level) => {
         runningTotal = op === '+' ? runningTotal + num : runningTotal - num
     }
 
-    // Vertical column format: "7<br>+ 3<br>- 2"
+    // Vertical column format: plain text with newlines
     const questionHtml = [
         String(numbers[0]),
         ...numbers.slice(1).map((n, i) => `${operations[i]} ${n}`)
-    ].join('<br>')
+    ].join('\n')
 
     return {
         question: questionHtml,
