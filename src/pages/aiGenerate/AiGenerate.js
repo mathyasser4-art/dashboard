@@ -31,44 +31,88 @@ const randomInt = (min, max) => Math.floor(Math.random() * (max - min + 1)) + mi
 const getMin = (digits) => digits === 1 ? 1 : Math.pow(10, digits - 1)
 const getMax = (digits) => Math.pow(10, digits) - 1
 
-const pickNumber = (digits, level) => {
+// ── Abacus technique validators (c and d are single digits 0–9) ───────────────
+
+// Friends-of-5 Addition: can't add d to c with free lower beads alone;
+// must do +5 −(5−d). Requires: both in lower zone (c<5, d<5) and cross 5-boundary.
+const f5Add = (c, d) => c >= 1 && c <= 4 && d >= 1 && d <= 4 && c + d >= 5
+
+// Friends-of-5 Subtraction: can't remove d from c with lower beads alone;
+// must do −5 +(5−d). Requires: c in upper zone (c≥5), result drops to lower zone.
+const f5Sub = (c, d) => c >= 5 && d >= 1 && d <= 4 && c - d >= 0 && c - d <= 4
+
+// Friends-of-10 Addition: adding d to c causes carry to next rod.
+const f10Add = (c, d) => c + d >= 10
+
+// Returns true if this step exercises the target technique for the chosen level.
+const isGoodStepForLevel = (runningTotal, num, op, level) => {
+    if (num < 1) return false
+    if (op === '-' && runningTotal - num < 0) return false
+    const uc = runningTotal % 10                    // unit digit of running total
+    const un = num % 10                             // unit digit of num
+    const tc = Math.floor(runningTotal / 10) % 10  // tens digit of running total
+    const tn = Math.floor(num / 10) % 10           // tens digit of num
+    switch (level) {
+        case 'basic':
+            // All bead moves are direct — no friends technique required at all
+            return op === '+' ? !f5Add(uc, un) && !f10Add(uc, un) : !f5Sub(uc, un)
+        case 'friends5':
+            // Must trigger friends-of-5 in the unit column; no carry allowed
+            return op === '+' ? f5Add(uc, un) && !f10Add(uc, un) : f5Sub(uc, un)
+        case 'friends10':
+            // Must trigger carry to next rod in unit column
+            return op === '+' ? f10Add(uc, un) : false
+        case 'bigFriends5':
+            // Friends-of-5 in the tens column; no carry in tens
+            return op === '+' ? f5Add(tc, tn) && !f10Add(tc, tn) : f5Sub(tc, tn)
+        case 'bigFriends10':
+            // Carry in the tens column (into hundreds rod)
+            return op === '+' ? f10Add(tc, tn) : false
+        default:
+            return true
+    }
+}
+
+// Try up to 60 random candidates to find one matching the level technique.
+// Returns null if no match found (caller must fallback).
+const tryPickForLevel = (digits, runningTotal, op, level) => {
+    const maxVal = getMax(digits)
+    const maxCand = op === '-' ? runningTotal : maxVal
+    if (maxCand < 1) return null
+    for (let i = 0; i < 60; i++) {
+        const n = randomInt(1, maxCand)
+        if (isGoodStepForLevel(runningTotal, n, op, level)) return n
+    }
+    return null
+}
+
+// Pick the opening number in a sequence, seeded for the target level.
+const pickFirstNumber = (digits, level) => {
     const min = getMin(digits)
     const max = getMax(digits)
-
     switch (level) {
-        case 'friends5': {
-            // Unit digit from friends-of-5 pairs: 1↔4, 2↔3
-            const unitOptions = [1, 2, 3, 4]
-            const unit = unitOptions[Math.floor(Math.random() * unitOptions.length)]
-            if (digits === 1) return unit
-            const higherPart = randomInt(getMin(digits - 1), getMax(digits - 1)) * 10
-            return higherPart + unit
-        }
-        case 'friends10': {
-            // Unit digit 1-9 (pairs that sum to 10)
-            const unit = randomInt(1, 9)
-            if (digits === 1) return unit
-            const higherPart = randomInt(getMin(digits - 1), getMax(digits - 1)) * 10
-            return higherPart + unit
-        }
-        case 'bigFriends5': {
-            // Tens digit in friends-of-5 range (10, 20, 30, 40)
-            if (digits === 1) return randomInt(1, 4)
-            const tensDigit = [1, 2, 3, 4][Math.floor(Math.random() * 4)] * 10
-            const unit = randomInt(0, 9)
-            return tensDigit + unit
-        }
-        case 'bigFriends10': {
-            // Larger numbers requiring carry into next column
-            if (digits === 1) return randomInt(1, 9)
-            const tensDigit = randomInt(1, 9) * 10
-            const unit = randomInt(0, 9)
-            return tensDigit + unit
-        }
+        case 'friends5':
+            // Unit digit 1–4: positions f5Add is achievable on first step
+            return digits === 1
+                ? randomInt(1, 4)
+                : Math.floor(randomInt(min, max) / 10) * 10 + randomInt(1, 4)
+        case 'friends10':
+            // Unit digit 1–9 so carry is reachable
+            return digits === 1
+                ? randomInt(1, 9)
+                : Math.floor(randomInt(min, max) / 10) * 10 + randomInt(1, 9)
+        case 'bigFriends5':
+            // Tens digit 1–4
+            return digits <= 1 ? randomInt(1, 4) : randomInt(1, 4) * 10 + randomInt(0, 9)
+        case 'bigFriends10':
+            // Tens digit 1–9
+            return digits <= 1 ? randomInt(1, 9) : randomInt(1, 9) * 10 + randomInt(0, 9)
         case 'basic':
         default:
-            // Small numbers, no carry needed
-            return randomInt(min, Math.max(min, Math.floor(max / 2)))
+            // Start small: unit digit 1–4 (plenty of free lower beads)
+            return digits === 1
+                ? randomInt(1, 4)
+                : Math.floor(randomInt(min, Math.max(min, Math.floor(max * 0.4))) / 10) * 10 + randomInt(1, 4)
     }
 }
 
@@ -76,38 +120,52 @@ const generateAddSubQuestion = (digits, rows, ops, level) => {
     const canAdd = ops.includes('+')
     const canSubtract = ops.includes('-')
 
-    const firstNum = pickNumber(digits, level)
+    const firstNum = pickFirstNumber(digits, level)
     const numbers = [firstNum]
     const operations = []
     let runningTotal = firstNum
 
     for (let i = 1; i < rows; i++) {
-        const num = pickNumber(digits, level)
-        const canActuallySubtract = canSubtract && (runningTotal - num) >= 0
-        const canActuallyAdd = canAdd
+        const canSub = canSubtract && runningTotal > 0
 
-        let op
-        if (canActuallyAdd && canActuallySubtract) {
-            op = Math.random() > 0.5 ? '+' : '-'
-        } else if (canActuallySubtract) {
-            op = '-'
-        } else {
-            op = '+'
+        // Try both ops (in random order) to find one that exercises the right technique
+        const opCandidates = []
+        if (canAdd) opCandidates.push('+')
+        if (canSub) opCandidates.push('-')
+        if (opCandidates.length > 1 && Math.random() > 0.5) opCandidates.reverse()
+
+        let finalOp = opCandidates[0] || '+'
+        let finalNum = null
+
+        for (const op of opCandidates) {
+            const n = tryPickForLevel(digits, runningTotal, op, level)
+            if (n !== null) { finalOp = op; finalNum = n; break }
         }
 
-        numbers.push(num)
-        operations.push(op)
-        runningTotal = op === '+' ? runningTotal + num : runningTotal - num
+        // Fallback: safe arbitrary number (math stays correct, technique not guaranteed)
+        if (finalNum === null) {
+            finalOp = canSub && Math.random() > 0.5 ? '-' : '+'
+            const safeMax = finalOp === '-'
+                ? runningTotal
+                : Math.max(1, Math.min(getMax(digits) - runningTotal, 4))
+            finalNum = randomInt(1, Math.max(1, safeMax))
+        }
+
+        // Final guard: never allow negative running total
+        if (finalOp === '-' && runningTotal - finalNum < 0) finalOp = '+'
+
+        numbers.push(finalNum)
+        operations.push(finalOp)
+        runningTotal = finalOp === '+' ? runningTotal + finalNum : runningTotal - finalNum
     }
 
-    // Vertical column format: plain text with newlines
-    const questionHtml = [
+    const questionText = [
         String(numbers[0]),
         ...numbers.slice(1).map((n, i) => `${operations[i]} ${n}`)
     ].join('\n')
 
     return {
-        question: questionHtml,
+        question: questionText,
         answer: [String(runningTotal)],
         questionPoints: 1,
         type: 'Essay',
