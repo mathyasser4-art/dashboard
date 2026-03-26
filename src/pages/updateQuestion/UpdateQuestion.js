@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
+import NumeralKeyboard from '../../components/NumeralKeyboard/NumeralKeyboard';
 import getQuestionDetails from '../../api/getQuestionDetails.api'
 import updateQuestion from '../../api/updateQuestion.api'
 import addAnswerPic from '../../api/addAnswerPic.api'
@@ -44,6 +45,7 @@ const UpdateQuestion = () => {
     const [mcqAnswerTh, setMcqAnswerTh] = useState('')
     const [mcqAnswerFr, setMcqAnswerFr] = useState('')
     const [correctAnswer, setCorrectAnswer] = useState('')
+    const [activeAnswerField, setActiveAnswerField] = useState(null)
 
     const questionStripped = useRef(false)
 
@@ -133,6 +135,38 @@ const UpdateQuestion = () => {
         setCorrectAnswer(value)
     }
 
+    const getActiveAnswerValue = () => {
+        if (activeAnswerField === 'essay') return answer
+        if (activeAnswerField === 'mcq-1') return mcqAnswerFs
+        if (activeAnswerField === 'mcq-2') return mcqAnswerSe
+        if (activeAnswerField === 'mcq-3') return mcqAnswerTh
+        if (activeAnswerField === 'mcq-4') return mcqAnswerFr
+        return ''
+    }
+
+    const setActiveAnswerValue = (value) => {
+        if (activeAnswerField === 'essay') setAnswer(value)
+        if (activeAnswerField === 'mcq-1') setMcqAnswerFs(value)
+        if (activeAnswerField === 'mcq-2') setMcqAnswerSe(value)
+        if (activeAnswerField === 'mcq-3') setMcqAnswerTh(value)
+        if (activeAnswerField === 'mcq-4') setMcqAnswerFr(value)
+    }
+
+    const insertNumeral = (numeral) => {
+        const currentValue = getActiveAnswerValue()
+        setActiveAnswerValue(`${currentValue}${numeral}`)
+    }
+
+    const backspaceNumeral = () => {
+        const currentValue = getActiveAnswerValue()
+        setActiveAnswerValue(currentValue.slice(0, -1))
+    }
+
+    const insertSpace = () => {
+        const currentValue = getActiveAnswerValue()
+        setActiveAnswerValue(`${currentValue} `)
+    }
+
     const handleUpadteAutoCorrect = () => {
         updateAutoCorrect(questionID, setserverOperationError, setAutoCorrectLoading, setQuestionDetails)
     }
@@ -174,60 +208,81 @@ const UpdateQuestion = () => {
                             type="text"
                             placeholder="Type the answer using English or Arabic numerals"
                             value={answer}
+                            onFocus={() => setActiveAnswerField('essay')}
                             onChange={e => setAnswer(e.target.value)}
                         />
+                        {activeAnswerField === 'essay' ? (
+                            <NumeralKeyboard
+                                onInsert={insertNumeral}
+                                onBackspace={backspaceNumeral}
+                                onSpace={insertSpace}
+                                onClose={() => setActiveAnswerField(null)}
+                            />
+                        ) : ''}
                     </div>
                     <li onClick={addAnswer}>+</li>
-                </div> : (questionType == 'MCQ') ? <div className="keyboard mcq-answer d-flex">
-                    <div className='mcq-input'>
-                        <div className='d-flex align-items-center answer-toggel'>
-                            <input type="radio" id="berries_3" defaultChecked value={mcqAnswerFs} name="coorect-answer" onChange={e => checkedCorrecrAnswer(e.target.value)} />
-                            <p>Answer 1 (Correct answer)</p>
+                </div> : (questionType == 'MCQ') ? <div className="keyboard mcq-answer d-flex"> 
+                        <div className='mcq-input'>
+                            <div className='d-flex align-items-center answer-toggel'>
+                                <input type="radio" id="berries_3" defaultChecked value={mcqAnswerFs} name="coorect-answer" onChange={e => checkedCorrecrAnswer(e.target.value)} />
+                                <p>Answer 1 (Correct answer)</p>
+                            </div>
+                            <input
+                                type="text"
+                                placeholder="Type answer 1"
+                                value={mcqAnswerFs}
+                                onFocus={() => setActiveAnswerField('mcq-1')}
+                                onChange={e => setMcqAnswerFs(e.target.value)}
+                            />
                         </div>
-                        <input
-                            type="text"
-                            placeholder="Type answer 1"
-                            value={mcqAnswerFs}
-                            onChange={e => setMcqAnswerFs(e.target.value)}
-                        />
-                    </div>
-                    <div className='mcq-input'>
-                        <div className='d-flex align-items-center answer-toggel'>
-                            <input type="radio" id="berries_3" value={mcqAnswerSe} name="coorect-answer" onChange={e => checkedCorrecrAnswer(e.target.value)} />
-                            <p>Answer 2 (Correct answer)</p>
+                        <div className='mcq-input'>
+                            <div className='d-flex align-items-center answer-toggel'>
+                                <input type="radio" id="berries_3" value={mcqAnswerSe} name="coorect-answer" onChange={e => checkedCorrecrAnswer(e.target.value)} />
+                                <p>Answer 2 (Correct answer)</p>
+                            </div>
+                            <input
+                                type="text"
+                                placeholder="Type answer 2"
+                                value={mcqAnswerSe}
+                                onFocus={() => setActiveAnswerField('mcq-2')}
+                                onChange={e => setMcqAnswerSe(e.target.value)}
+                            />
                         </div>
-                        <input
-                            type="text"
-                            placeholder="Type answer 2"
-                            value={mcqAnswerSe}
-                            onChange={e => setMcqAnswerSe(e.target.value)}
-                        />
-                    </div>
-                    <div className='mcq-input'>
-                        <div className='d-flex align-items-center answer-toggel'>
-                            <input type="radio" id="berries_3" value={mcqAnswerTh} name="coorect-answer" onChange={e => checkedCorrecrAnswer(e.target.value)} />
-                            <p>Answer 3 (Correct answer)</p>
+                        <div className='mcq-input'>
+                            <div className='d-flex align-items-center answer-toggel'>
+                                <input type="radio" id="berries_3" value={mcqAnswerTh} name="coorect-answer" onChange={e => checkedCorrecrAnswer(e.target.value)} />
+                                <p>Answer 3 (Correct answer)</p>
+                            </div>
+                            <input
+                                type="text"
+                                placeholder="Type answer 3"
+                                value={mcqAnswerTh}
+                                onFocus={() => setActiveAnswerField('mcq-3')}
+                                onChange={e => setMcqAnswerTh(e.target.value)}
+                            />
                         </div>
-                        <input
-                            type="text"
-                            placeholder="Type answer 3"
-                            value={mcqAnswerTh}
-                            onChange={e => setMcqAnswerTh(e.target.value)}
-                        />
-                    </div>
-                    <div className='mcq-input'>
-                        <div className='d-flex align-items-center answer-toggel'>
-                            <input type="radio" id="berries_3" value={mcqAnswerFr} name="coorect-answer" onChange={e => checkedCorrecrAnswer(e.target.value)} />
-                            <p>Answer 4 (Correct answer)</p>
+                        <div className='mcq-input'>
+                            <div className='d-flex align-items-center answer-toggel'>
+                                <input type="radio" id="berries_3" value={mcqAnswerFr} name="coorect-answer" onChange={e => checkedCorrecrAnswer(e.target.value)} />
+                                <p>Answer 4 (Correct answer)</p>
+                            </div>
+                            <input
+                                type="text"
+                                placeholder="Type answer 4"
+                                value={mcqAnswerFr}
+                                onFocus={() => setActiveAnswerField('mcq-4')}
+                                onChange={e => setMcqAnswerFr(e.target.value)}
+                            />
+                            {['mcq-1', 'mcq-2', 'mcq-3', 'mcq-4'].includes(activeAnswerField) ? (
+                                <NumeralKeyboard
+                                    onInsert={insertNumeral}
+                                    onBackspace={backspaceNumeral}
+                                    onSpace={insertSpace}
+                                    onClose={() => setActiveAnswerField(null)}
+                                />
+                            ) : ''}
                         </div>
-                        <input
-                            type="text"
-                            placeholder="Type answer 4"
-                            value={mcqAnswerFr}
-                            onChange={e => setMcqAnswerFr(e.target.value)}
-                        />
-                    </div>
-                </div> : ''}
+                    </div> : ''}
                 <div className='d-flex flex-wrap'>
                     {(allAnswer.length != 0) ? allAnswer.map(item => {
                         return (
