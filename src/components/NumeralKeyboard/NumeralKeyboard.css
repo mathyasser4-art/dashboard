@@ -1,0 +1,73 @@
+.numeral-keyboard {
+    margin-top: 0.75rem;
+    border: 1px solid rgb(206, 212, 218);
+    border-radius: 10px;
+    padding: 0.9rem;
+    background-color: #f8fafc;
+}
+
+.numeral-keyboard__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 0.9rem;
+}
+
+.numeral-keyboard__header p {
+    margin: 0 !important;
+    font-size: 1rem !important;
+    font-weight: 700;
+    color: #0f172a !important;
+}
+
+.numeral-keyboard__header button,
+.numeral-keyboard__grid button,
+.numeral-keyboard__actions button {
+    border: 1px solid #cbd5e1;
+    background-color: #fff;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: 0.2s ease;
+}
+
+.numeral-keyboard__header button:hover,
+.numeral-keyboard__grid button:hover,
+.numeral-keyboard__actions button:hover {
+    background-color: #e2e8f0;
+}
+
+.numeral-keyboard__section {
+    margin-bottom: 0.9rem;
+}
+
+.numeral-keyboard__section span {
+    display: block;
+    margin-bottom: 0.5rem;
+    text-align: left;
+    font-weight: 600;
+    color: #334155;
+}
+
+.numeral-keyboard__grid {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 0.5rem;
+}
+
+.numeral-keyboard__grid button {
+    min-height: 42px;
+    font-size: 1.1rem;
+    font-weight: 700;
+}
+
+.numeral-keyboard__actions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.numeral-keyboard__actions button,
+.numeral-keyboard__header button {
+    padding: 0.65rem 0.9rem;
+    font-weight: 600;
+}
