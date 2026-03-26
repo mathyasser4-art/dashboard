@@ -138,6 +138,30 @@ input[type="radio"]{
     cursor: pointer;
 }
 
+.mcq-input{
+    margin-right: 0.8rem;
+    width: 30%;
+}
+
+.mcq-answer{
+    margin-top: 1rem;
+}
+
+.keyboard li{
+    position: absolute;
+    top: 2.4px;
+    left: 400px;
+    background-color: rgb(56, 56, 238);
+    color: #fff;
+    padding: 0rem 1rem;
+    padding-bottom: 0.2rem;
+    font-size: 2rem;
+    border-radius: 10px;
+    margin-left: 0.8rem;
+    cursor: pointer;
+    list-style-type: none;
+}
+
 .essay-answer {
     display: flex;
     align-items: flex-start;
