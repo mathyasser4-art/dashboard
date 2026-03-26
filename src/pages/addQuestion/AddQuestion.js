@@ -4,6 +4,7 @@ import addQuestion from '../../api/addQuestion.api'
 import addAnswerPic from '../../api/addAnswerPic.api'
 import addGraphQuestion from '../../api/addGraphQuestion.api';
 import correctIcon from '../../correct-icon.png'
+import NumeralKeyboard from '../../components/NumeralKeyboard/NumeralKeyboard'
 import '../../reusable.css';
 import './AddQuestion.css'
 
@@ -40,6 +41,7 @@ const AddQuestion = () => {
     const [previewWrongAPTh, setPreviewWrongAPTh] = useState('')
     const [serverGraphError, setServerGraphError] = useState(null)
     const [serverGraphLoading, setServerGraphLoading] = useState(false)
+    const [activeAnswerField, setActiveAnswerField] = useState(null)
 
     const { chapterID, chapterName, questionTypeID, unitID, questionTypeName, subjectID, questionNum } = useParams()
     const navigate = useNavigate()
@@ -84,6 +86,7 @@ const AddQuestion = () => {
         if (answer === '') return;
         setAllAnswer(current => [...current, answer]);
         setAnswer('');
+        setActiveAnswerField(null)
     }
 
     const removeAnswer = (item) => {
@@ -185,6 +188,38 @@ const AddQuestion = () => {
         setCorrectAnswer(value)
     }
 
+    const getActiveAnswerValue = () => {
+        if (activeAnswerField === 'essay') return answer
+        if (activeAnswerField === 'mcq-1') return mcqAnswerFs
+        if (activeAnswerField === 'mcq-2') return mcqAnswerSe
+        if (activeAnswerField === 'mcq-3') return mcqAnswerTh
+        if (activeAnswerField === 'mcq-4') return mcqAnswerFr
+        return ''
+    }
+
+    const setActiveAnswerValue = (value) => {
+        if (activeAnswerField === 'essay') setAnswer(value)
+        if (activeAnswerField === 'mcq-1') setMcqAnswerFs(value)
+        if (activeAnswerField === 'mcq-2') setMcqAnswerSe(value)
+        if (activeAnswerField === 'mcq-3') setMcqAnswerTh(value)
+        if (activeAnswerField === 'mcq-4') setMcqAnswerFr(value)
+    }
+
+    const insertNumeral = (numeral) => {
+        const currentValue = getActiveAnswerValue()
+        setActiveAnswerValue(`${currentValue}${numeral}`)
+    }
+
+    const backspaceNumeral = () => {
+        const currentValue = getActiveAnswerValue()
+        setActiveAnswerValue(currentValue.slice(0, -1))
+    }
+
+    const insertSpace = () => {
+        const currentValue = getActiveAnswerValue()
+        setActiveAnswerValue(`${currentValue} `)
+    }
+
     return (
         <div className="add-question">
             <div>
@@ -233,8 +268,17 @@ const AddQuestion = () => {
                                 type="text"
                                 placeholder="Type the answer using English or Arabic numerals"
                                 value={answer}
+                                onFocus={() => setActiveAnswerField('essay')}
                                 onChange={e => setAnswer(e.target.value)}
                             />
+                            {activeAnswerField === 'essay' ? (
+                                <NumeralKeyboard
+                                    onInsert={insertNumeral}
+                                    onBackspace={backspaceNumeral}
+                                    onSpace={insertSpace}
+                                    onClose={() => setActiveAnswerField(null)}
+                                />
+                            ) : ''}
                         </div>
                         <li onClick={addAnswer}>+</li>
                     </div>
@@ -259,8 +303,17 @@ const AddQuestion = () => {
                             type="text"
                             placeholder="Type answer 1"
                             value={mcqAnswerFs}
+                            onFocus={() => setActiveAnswerField('mcq-1')}
                             onChange={e => setMcqAnswerFs(e.target.value)}
                         />
+                        {activeAnswerField === 'mcq-1' ? (
+                            <NumeralKeyboard
+                                onInsert={insertNumeral}
+                                onBackspace={backspaceNumeral}
+                                onSpace={insertSpace}
+                                onClose={() => setActiveAnswerField(null)}
+                            />
+                        ) : ''}
                     </div>
                     <div className='mcq-input'>
                         <div className='d-flex align-items-center answer-toggel'>
@@ -271,8 +324,17 @@ const AddQuestion = () => {
                             type="text"
                             placeholder="Type answer 2"
                             value={mcqAnswerSe}
+                            onFocus={() => setActiveAnswerField('mcq-2')}
                             onChange={e => setMcqAnswerSe(e.target.value)}
                         />
+                        {activeAnswerField === 'mcq-2' ? (
+                            <NumeralKeyboard
+                                onInsert={insertNumeral}
+                                onBackspace={backspaceNumeral}
+                                onSpace={insertSpace}
+                                onClose={() => setActiveAnswerField(null)}
+                            />
+                        ) : ''}
                     </div>
                     <div className='mcq-input'>
                         <div className='d-flex align-items-center answer-toggel'>
@@ -283,8 +345,17 @@ const AddQuestion = () => {
                             type="text"
                             placeholder="Type answer 3"
                             value={mcqAnswerTh}
+                            onFocus={() => setActiveAnswerField('mcq-3')}
                             onChange={e => setMcqAnswerTh(e.target.value)}
                         />
+                        {activeAnswerField === 'mcq-3' ? (
+                            <NumeralKeyboard
+                                onInsert={insertNumeral}
+                                onBackspace={backspaceNumeral}
+                                onSpace={insertSpace}
+                                onClose={() => setActiveAnswerField(null)}
+                            />
+                        ) : ''}
                     </div>
                     <div className='mcq-input'>
                         <div className='d-flex align-items-center answer-toggel'>
@@ -295,8 +366,17 @@ const AddQuestion = () => {
                             type="text"
                             placeholder="Type answer 4"
                             value={mcqAnswerFr}
+                            onFocus={() => setActiveAnswerField('mcq-4')}
                             onChange={e => setMcqAnswerFr(e.target.value)}
                         />
+                        {activeAnswerField === 'mcq-4' ? (
+                            <NumeralKeyboard
+                                onInsert={insertNumeral}
+                                onBackspace={backspaceNumeral}
+                                onSpace={insertSpace}
+                                onClose={() => setActiveAnswerField(null)}
+                            />
+                        ) : ''}
                     </div>
                 </div> : ''}
                 <input type="text" placeholder='Enter the question points' value={questionPoint} onChange={e => setQuestionPoint(e.target.value)} />
