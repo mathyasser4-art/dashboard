@@ -4,7 +4,6 @@ import addQuestion from '../../api/addQuestion.api'
 import addAnswerPic from '../../api/addAnswerPic.api'
 import addGraphQuestion from '../../api/addGraphQuestion.api';
 import correctIcon from '../../correct-icon.png'
-import MathInput from "react-math-keyboard";
 import '../../reusable.css';
 import './AddQuestion.css'
 
@@ -41,12 +40,6 @@ const AddQuestion = () => {
     const [previewWrongAPTh, setPreviewWrongAPTh] = useState('')
     const [serverGraphError, setServerGraphError] = useState(null)
     const [serverGraphLoading, setServerGraphLoading] = useState(false)
-
-    const answerRef = useRef(null);
-    const mf = useRef();
-    const wafs = useRef();
-    const wase = useRef();
-    const wath = useRef();
 
     const { chapterID, chapterName, questionTypeID, unitID, questionTypeName, subjectID, questionNum } = useParams()
     const navigate = useNavigate()
@@ -91,7 +84,6 @@ const AddQuestion = () => {
         if (answer === '') return;
         setAllAnswer(current => [...current, answer]);
         setAnswer('');
-        if (answerRef.current) answerRef.current();
     }
 
     const removeAnswer = (item) => {
@@ -163,13 +155,6 @@ const AddQuestion = () => {
 
     const newQuestion = () => {
         setQuestion('')
-        if (answerRef.current) answerRef.current()
-        if (questionType == "MCQ Question") {
-            mf.current()
-            wafs.current()
-            wase.current()
-            wath.current()
-        }
         setQuesionFullAdded(false)
         setAnswer('')
         setQuestionPoint('')
@@ -244,7 +229,12 @@ const AddQuestion = () => {
                 {(questionType == 'Essay Question') ? <>
                     <div className="keyboard essay-answer">
                         <div className="essay-math-input">
-                            <MathInput setClearRef={f => answerRef.current = f} setValue={setAnswer} />
+                            <input
+                                type="text"
+                                placeholder="Type the answer using English or Arabic numerals"
+                                value={answer}
+                                onChange={e => setAnswer(e.target.value)}
+                            />
                         </div>
                         <li onClick={addAnswer}>+</li>
                     </div>
@@ -265,28 +255,48 @@ const AddQuestion = () => {
                             <input type="radio" id="berries_3" defaultChecked value={mcqAnswerFs} name="coorect-answer" onChange={e => checkedCorrecrAnswer(e.target.value)} />
                             <p>Answer 1 (Correct answer)</p>
                         </div>
-                        <MathInput setClearRef={f => wafs.current = f} setValue={setMcqAnswerFs} />
+                        <input
+                            type="text"
+                            placeholder="Type answer 1"
+                            value={mcqAnswerFs}
+                            onChange={e => setMcqAnswerFs(e.target.value)}
+                        />
                     </div>
                     <div className='mcq-input'>
                         <div className='d-flex align-items-center answer-toggel'>
                             <input type="radio" id="berries_3" value={mcqAnswerSe} name="coorect-answer" onChange={e => checkedCorrecrAnswer(e.target.value)} />
                             <p>Answer 2 (Correct answer)</p>
                         </div>
-                        <MathInput setClearRef={f => wase.current = f} setValue={setMcqAnswerSe} />
+                        <input
+                            type="text"
+                            placeholder="Type answer 2"
+                            value={mcqAnswerSe}
+                            onChange={e => setMcqAnswerSe(e.target.value)}
+                        />
                     </div>
                     <div className='mcq-input'>
                         <div className='d-flex align-items-center answer-toggel'>
                             <input type="radio" id="berries_3" value={mcqAnswerTh} name="coorect-answer" onChange={e => checkedCorrecrAnswer(e.target.value)} />
                             <p>Answer 3 (Correct answer)</p>
                         </div>
-                        <MathInput setClearRef={f => wath.current = f} setValue={setMcqAnswerTh} />
+                        <input
+                            type="text"
+                            placeholder="Type answer 3"
+                            value={mcqAnswerTh}
+                            onChange={e => setMcqAnswerTh(e.target.value)}
+                        />
                     </div>
                     <div className='mcq-input'>
                         <div className='d-flex align-items-center answer-toggel'>
                             <input type="radio" id="berries_3" value={mcqAnswerFr} name="coorect-answer" onChange={e => checkedCorrecrAnswer(e.target.value)} />
                             <p>Answer 4 (Correct answer)</p>
                         </div>
-                        <MathInput setClearRef={f => mf.current = f} setValue={setMcqAnswerFr} />
+                        <input
+                            type="text"
+                            placeholder="Type answer 4"
+                            value={mcqAnswerFr}
+                            onChange={e => setMcqAnswerFr(e.target.value)}
+                        />
                     </div>
                 </div> : ''}
                 <input type="text" placeholder='Enter the question points' value={questionPoint} onChange={e => setQuestionPoint(e.target.value)} />

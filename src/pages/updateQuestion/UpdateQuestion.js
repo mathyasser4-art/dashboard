@@ -5,7 +5,6 @@ import updateQuestion from '../../api/updateQuestion.api'
 import addAnswerPic from '../../api/addAnswerPic.api'
 import updateAutoCorrect from '../../api/updateAutoCorrect.api'
 import correctIcon from '../../correct-icon.png'
-import MathInput from "react-math-keyboard";
 import '../../reusable.css'
 import './UpdateQuestion.css'
 
@@ -46,7 +45,6 @@ const UpdateQuestion = () => {
     const [mcqAnswerFr, setMcqAnswerFr] = useState('')
     const [correctAnswer, setCorrectAnswer] = useState('')
 
-    const answerRef = useRef(null);
     const questionStripped = useRef(false)
 
     const { questionID, questionTypeID, unitID, questionTypeName, subjectID } = useParams()
@@ -84,7 +82,6 @@ const UpdateQuestion = () => {
         if (answer === '') return;
         setAllAnswer(current => [...current, answer]);
         setAnswer('');
-        if (answerRef.current) answerRef.current();
     }
 
     const removeAnswer = (item) => {
@@ -173,7 +170,12 @@ const UpdateQuestion = () => {
                 />
                 {(questionType == 'Essay') ? <div className="keyboard essay-answer">
                     <div className="essay-math-input">
-                        <MathInput setClearRef={f => answerRef.current = f} setValue={setAnswer} />
+                        <input
+                            type="text"
+                            placeholder="Type the answer using English or Arabic numerals"
+                            value={answer}
+                            onChange={e => setAnswer(e.target.value)}
+                        />
                     </div>
                     <li onClick={addAnswer}>+</li>
                 </div> : (questionType == 'MCQ') ? <div className="keyboard mcq-answer d-flex">
@@ -182,28 +184,48 @@ const UpdateQuestion = () => {
                             <input type="radio" id="berries_3" defaultChecked value={mcqAnswerFs} name="coorect-answer" onChange={e => checkedCorrecrAnswer(e.target.value)} />
                             <p>Answer 1 (Correct answer)</p>
                         </div>
-                        <MathInput initialLatex={mcqAnswerFs} setValue={setMcqAnswerFs} />
+                        <input
+                            type="text"
+                            placeholder="Type answer 1"
+                            value={mcqAnswerFs}
+                            onChange={e => setMcqAnswerFs(e.target.value)}
+                        />
                     </div>
                     <div className='mcq-input'>
                         <div className='d-flex align-items-center answer-toggel'>
                             <input type="radio" id="berries_3" value={mcqAnswerSe} name="coorect-answer" onChange={e => checkedCorrecrAnswer(e.target.value)} />
                             <p>Answer 2 (Correct answer)</p>
                         </div>
-                        <MathInput initialLatex={mcqAnswerSe} setValue={setMcqAnswerSe} />
+                        <input
+                            type="text"
+                            placeholder="Type answer 2"
+                            value={mcqAnswerSe}
+                            onChange={e => setMcqAnswerSe(e.target.value)}
+                        />
                     </div>
                     <div className='mcq-input'>
                         <div className='d-flex align-items-center answer-toggel'>
                             <input type="radio" id="berries_3" value={mcqAnswerTh} name="coorect-answer" onChange={e => checkedCorrecrAnswer(e.target.value)} />
                             <p>Answer 3 (Correct answer)</p>
                         </div>
-                        <MathInput initialLatex={mcqAnswerTh} setValue={setMcqAnswerTh} />
+                        <input
+                            type="text"
+                            placeholder="Type answer 3"
+                            value={mcqAnswerTh}
+                            onChange={e => setMcqAnswerTh(e.target.value)}
+                        />
                     </div>
                     <div className='mcq-input'>
                         <div className='d-flex align-items-center answer-toggel'>
                             <input type="radio" id="berries_3" value={mcqAnswerFr} name="coorect-answer" onChange={e => checkedCorrecrAnswer(e.target.value)} />
                             <p>Answer 4 (Correct answer)</p>
                         </div>
-                        <MathInput initialLatex={mcqAnswerFr} setValue={setMcqAnswerFr} />
+                        <input
+                            type="text"
+                            placeholder="Type answer 4"
+                            value={mcqAnswerFr}
+                            onChange={e => setMcqAnswerFr(e.target.value)}
+                        />
                     </div>
                 </div> : ''}
                 <div className='d-flex flex-wrap'>
