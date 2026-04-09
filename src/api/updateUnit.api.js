@@ -1,13 +1,11 @@
-const URL = 'http://localhost:8000/unit/updateUnit'
-const Token = localStorage.getItem('O_authDB')
+const URL = 'https://abacus-2ntk.onrender.com/unit/updateUnit'
 
 const updateUnit = (data, questionTypeID, unitID, subjectID, setserverOperationError, setServerOperationLoading, setAllUnit) => {
     setServerOperationLoading(true)
     fetch(`${URL}/${questionTypeID}/${unitID}/${subjectID}`, {
         method: 'put',
         headers: {
-            'Content-Type': 'application/json',
-            'authrization': `pracYas09${Token}`
+            'Content-Type': 'application/json'
         },
         body: JSON.stringify(data)
     })

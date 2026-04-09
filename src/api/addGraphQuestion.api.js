@@ -1,13 +1,9 @@
 const URL = 'https://abacus-2ntk.onrender.com/question/addGraphQuestion'
-const Token = localStorage.getItem('O_authDB')
 
 const addGraphQuestion = (data, quesionID, setServerGraphError, setServerGraphLoading, setQuesionAdded) => {
     setServerGraphLoading(true)
     fetch(`${URL}/${quesionID}`, {
         method: 'put',
-        headers: {
-            'authrization': `pracYas09${Token}`
-        },
         body: data
     })
         .then((response) => response.json())

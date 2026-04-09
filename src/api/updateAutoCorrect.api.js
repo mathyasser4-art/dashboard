@@ -1,13 +1,11 @@
 const URL = 'https://abacus-2ntk.onrender.com/question/updateAutoCorrect/'
-const Token = localStorage.getItem('O_authDB')
 
 const updateAutoCorrect = (questionID, setserverOperationError, setAutoCorrectLoading, setQuestionDetails) => {
     setAutoCorrectLoading(true)
     fetch(`${URL}${questionID}`, {
         method: 'put',
         headers: {
-            'Content-Type': 'application/json',
-            'authrization': `pracYas09${Token}`
+            'Content-Type': 'application/json'
         }
     })
         .then((response) => response.json())
