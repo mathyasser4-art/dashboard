@@ -1,0 +1,33 @@
+.login{
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+}
+
+.login div{
+    background-color: #fff;
+    padding: 2rem 3rem;
+    border-radius: 10px;
+    text-align: center;
+}
+
+.login input{
+    display: block;
+    margin-bottom: 1rem;
+    padding: 0.5rem 1rem;
+    border-radius: 10px;
+    width: 200px;
+    border: 1px solid rgb(148, 147, 147);
+}
+
+.login p {
+    margin-bottom: 1rem;
+    font-size: 1rem;
+    color: rgb(202, 1, 1);
+}
+
+input:focus{
+    outline: none;
+}

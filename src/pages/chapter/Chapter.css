@@ -1,0 +1,139 @@
+.chpater-container {
+    padding: 7rem 5.5rem;
+}
+
+.chapter-head-name {
+    font-weight: bold;
+    margin-bottom: 0.5rem;
+}
+
+.chapter-icon i {
+    margin: 0rem 0.4rem;
+    font-size: 1.4rem;
+    cursor: pointer;
+}
+
+.icon {
+    color: #000;
+}
+
+.ai-icon {
+    color: rgb(100, 0, 200) !important;
+}
+
+.question {
+    background-color: #fff;
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.2), 0 3px 8px 0 rgba(0, 0, 0, 0.19);
+    padding: 1.2rem 1rem;
+    margin-top: 1rem;
+    border-radius: 5px;
+}
+
+.question p,
+.question-text,
+.question-text p {
+    color: rgb(56, 56, 238);
+    margin: 0;
+}
+
+.question i{
+    margin: 0rem 0.3rem;
+    font-size: 1.3rem;
+    cursor: pointer;
+}
+
+.question-actions {
+    display: flex;
+    align-items: center;
+}
+
+.move-icon {
+    color: rgb(0, 110, 200);
+}
+
+.chapter-popup {
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    right: 0;
+    left: 0;
+}
+
+.chapter-popup div {
+    background-color: #fff;
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.2), 0 3px 8px 0 rgba(0, 0, 0, 0.19);
+    padding: 2rem;
+    border-radius: 10px;
+    text-align: center;
+}
+
+.chapter-popup div button {
+    margin: 0rem 0.3rem;
+}
+
+.chapter-popup div button:nth-of-type(2) {
+    background-color: rgb(236, 4, 4);
+}
+
+.chapter-popup div p {
+    font-size: 1.2rem;
+    margin-bottom: 0.8rem;
+}
+
+.update-chapter-popup div input {
+    display: block;
+    padding: 0.5rem 1rem;
+    border: 1px solid rgb(94, 93, 93);
+    border-radius: 5px;
+    margin-bottom: 0.7rem;
+    width: 250px;
+}
+
+.move-question-card {
+    width: min(92vw, 460px);
+    text-align: left !important;
+}
+
+.move-question-card select {
+    width: 100%;
+    display: block;
+    margin-bottom: 0.75rem;
+    padding: 0.7rem 0.9rem;
+    border: 1px solid rgb(94, 93, 93);
+    border-radius: 6px;
+    outline: none;
+    font-size: 0.95rem;
+}
+
+.move-question-card select:disabled {
+    background-color: #efefef;
+    cursor: not-allowed;
+}
+
+.move-target-preview {
+    background-color: rgb(243, 243, 255);
+    border-radius: 8px;
+    padding: 0.9rem 1rem;
+    margin-top: 0.2rem;
+    margin-bottom: 1rem;
+}
+
+.move-target-preview p {
+    margin-bottom: 0.35rem !important;
+    font-size: 0.95rem !important;
+}
+
+.move-target-preview p:last-child {
+    margin-bottom: 0 !important;
+}
+
+.move-question-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    justify-content: center;
+}
+
+.move-question-btn {
+    background-color: rgb(0, 108, 210) !important;
+}

@@ -1,0 +1,129 @@
+.subject-container {
+    padding: 7rem 5.5rem;
+}
+
+.new-subject{
+    background-color: rgb(18, 18, 212);
+    padding: 1.1rem 1rem;
+    border-radius: 10px;
+    margin-bottom: 2rem;
+}
+
+.new-subject span{
+   background-color: #fff;
+   color: rgb(18, 18, 212);
+   padding: 0rem 0.8rem;
+   padding-bottom: 0.5rem;
+   font-size: 1.8rem;
+   border-radius: 50%;
+   margin-right: 0.6rem;
+}
+
+.system-name{
+    font-weight: bold;
+    margin-bottom: 0.5rem;
+}
+
+.subject-name{
+    color: rgb(56, 56, 238);
+    font-size: 0.9rem;
+    cursor: pointer;
+}
+
+.system-icon i{
+    margin: 0rem 0.4rem;
+    font-size: 1.4rem;
+    cursor: pointer;
+}
+
+.new-subject p {
+    font-size: 1.1rem;
+   font-weight: 500;
+   cursor: pointer;
+   color: #fff;
+}
+
+.system-cover{
+    background-color: #fff;
+    box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+    width: 43.2%;
+    margin: 1rem 1.5rem;
+    padding: 1rem;
+    border-radius: 10px;
+}
+
+.subject-popup {
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    right: 0;
+    left: 0;
+}
+
+.subject-popup div {
+    background-color: #fff;
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.2), 0 3px 8px 0 rgba(0, 0, 0, 0.19);
+    padding: 2rem;
+    border-radius: 10px;
+    text-align: center;
+}
+
+.subject-popup div button {
+    margin: 0rem 0.3rem;
+}
+
+.subject-popup div button:nth-of-type(2) {
+    background-color: rgb(236, 4, 4);
+}
+
+.subject-popup div p {
+    font-size: 1.2rem;
+    margin-bottom: 0.8rem;
+}
+
+.add-subject-popup div input,
+.update-subject-popup div input,
+.add-system-popup div input,
+.update-system-popup div input {
+    display: block;
+    padding: 0.5rem 1rem;
+    border: 1px solid rgb(94, 93, 93);
+    border-radius: 5px;
+    margin-bottom: 0.7rem;
+    width: 250px;
+}
+
+.system-name{
+    font-weight: bold;
+    margin-bottom: 0.5rem;
+}
+
+.subject-name{
+    color: rgb(56, 56, 238);
+    font-size: 0.9rem;
+    cursor: pointer;
+}
+
+.system-icon i{
+    margin: 0rem 0.4rem;
+    font-size: 1.4rem;
+    cursor: pointer;
+}
+
+.subject-cover{
+    background-color: rgb(56, 56, 238);
+    color: #fff;
+    padding: 0.8rem 0.8rem;
+    margin-top: 0.4rem;
+    border-radius: 10px;
+    font-size: 20px;
+}
+
+.subject-cover p{
+    color: #fff;
+    font-size: 18px;
+}
+
+.subject-cover i{
+    cursor: pointer;
+}
