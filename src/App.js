@@ -1,7 +1,6 @@
 import React, { useEffect } from 'react';
 import { Routes, Route, Navigate } from "react-router-dom";
 import Navbar from './components/navbar/Navbar'
-import Login from './pages/login/Login'
 import QuestionType from './pages/questionType/QuestionType'
 import Unit from './pages/unit/Unit'
 import Chapter from './pages/chapter/Chapter'
