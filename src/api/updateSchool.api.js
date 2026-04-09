@@ -1,4 +1,4 @@
-const URL = 'https://abacus-2ntk.onrender.com/school/updateSchool'
+const URL = 'https://backend-production-6752.up.railway.app/school/updateSchool'
 
 const updateSchool = (data, schoolID, setserverOperationError, setServerOperationLoading, setAllSchools) => {
     setServerOperationLoading(true)

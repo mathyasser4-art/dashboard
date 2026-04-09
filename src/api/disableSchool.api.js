@@ -1,4 +1,4 @@
-const URL = 'https://abacus-2ntk.onrender.com/school/disableSchool'
+const URL = 'https://backend-production-6752.up.railway.app/school/disableSchool'
 
 const disableSchool = (schoolID, setAllSchools) => {
     fetch(`${URL}/${schoolID}`, {

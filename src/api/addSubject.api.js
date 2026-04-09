@@ -1,4 +1,4 @@
-const URL = 'https://abacus-2ntk.onrender.com/subject/addSubject'
+const URL = 'https://backend-production-6752.up.railway.app/subject/addSubject'
 
 const addSubject = (data, setserverOperationError, setServerOperationLoading, setAllSystem) => {
     setServerOperationLoading(true)

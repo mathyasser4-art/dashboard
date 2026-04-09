@@ -1,4 +1,4 @@
-const URL = 'https://abacus-2ntk.onrender.com/chapter/getChapterQuestion/'
+const URL = 'https://backend-production-6752.up.railway.app/chapter/getChapterQuestion/'
 
 const getChapter = (chapterID, setChapterDetails, setLoading) => {
     setLoading(true)

@@ -1,4 +1,4 @@
-const URL = 'https://abacus-2ntk.onrender.com/chapter/updateChapter/'
+const URL = 'https://backend-production-6752.up.railway.app/chapter/updateChapter/'
 
 const updateChapter = (data, chapterID, setserverOperationError, setServerOperationLoading, setChapterDetails) => {
     setServerOperationLoading(true)

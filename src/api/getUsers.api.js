@@ -1,4 +1,4 @@
-const URL = 'https://abacus-2ntk.onrender.com/user/get'
+const URL = 'https://backend-production-6752.up.railway.app/user/get'
 
 const getUsers = (pageNumber, setLoading, setAllClients, setPageNumber, setTotalPage) => {
     setLoading(true)

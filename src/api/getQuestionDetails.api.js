@@ -1,4 +1,4 @@
-const URL = 'https://abacus-2ntk.onrender.com/question/getQuestionDetails/'
+const URL = 'https://backend-production-6752.up.railway.app/question/getQuestionDetails/'
 
 const getQuestionDetails = (questionID, setQuestionDetails, setLoading, setQuestion, setAllAnswer, setQuestionPoint, setQuestionType, setMcqAnswerFs, setMcqAnswerSe, setMcqAnswerTh, setMcqAnswerFr) => {
     setLoading(true)

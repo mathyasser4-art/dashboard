@@ -1,4 +1,4 @@
-const URL = 'https://abacus-2ntk.onrender.com/school/deleteSchool'
+const URL = 'https://backend-production-6752.up.railway.app/school/deleteSchool'
 
 const deleteSchool = (schoolID, setserverOperationError, setServerOperationLoading, setAllSchools) => {
     setServerOperationLoading(true)

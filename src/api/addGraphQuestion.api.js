@@ -1,4 +1,4 @@
-const URL = 'https://abacus-2ntk.onrender.com/question/addGraphQuestion'
+const URL = 'https://backend-production-6752.up.railway.app/question/addGraphQuestion'
 
 const addGraphQuestion = (data, quesionID, setServerGraphError, setServerGraphLoading, setQuesionAdded) => {
     setServerGraphLoading(true)

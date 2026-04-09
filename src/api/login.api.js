@@ -1,4 +1,4 @@
-const URL = 'https://abacus-2ntk.onrender.com/admin/login'
+const URL = 'https://backend-production-6752.up.railway.app/admin/login'
 
 // Login disabled - no authentication required
 const login = () => {

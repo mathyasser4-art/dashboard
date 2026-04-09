@@ -1,4 +1,4 @@
-const URL = 'https://abacus-2ntk.onrender.com/question/addQuestion'
+const URL = 'https://backend-production-6752.up.railway.app/question/addQuestion'
 const addQuestion = (data, setserverOperationError, setServerOperationLoading, setQuesionAdded, setQuesionID, questionType, setQuesionGraphAdded) => {
     setServerOperationLoading(true)
     fetch(`${URL}`, {

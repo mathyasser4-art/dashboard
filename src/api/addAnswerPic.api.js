@@ -1,4 +1,4 @@
-const URL = 'https://abacus-2ntk.onrender.com/question/updateAnswerPic/'
+const URL = 'https://backend-production-6752.up.railway.app/question/updateAnswerPic/'
 
 const addAnswerPic = (data, quesionID, setserverOperationError, setServerLoadingPic, setQuesionFullAdded, endPoint, navigate, chapterID, questionTypeID, unitID, questionTypeName, subjectID) => {
     setServerLoadingPic(true)

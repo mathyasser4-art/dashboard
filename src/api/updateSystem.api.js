@@ -1,4 +1,4 @@
-const URL = 'https://abacus-2ntk.onrender.com/system/updateSystem'
+const URL = 'https://backend-production-6752.up.railway.app/system/updateSystem'
 
 const updateSystem = (data, systemID, setserverOperationError, setServerOperationLoading, setAllSystem) => {
     setServerOperationLoading(true)

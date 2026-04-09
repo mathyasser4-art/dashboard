@@ -1,4 +1,4 @@
-const URL = 'https://abacus-2ntk.onrender.com/question/updateAutoCorrect/'
+const URL = 'https://backend-production-6752.up.railway.app/question/updateAutoCorrect/'
 
 const updateAutoCorrect = (questionID, setserverOperationError, setAutoCorrectLoading, setQuestionDetails) => {
     setAutoCorrectLoading(true)

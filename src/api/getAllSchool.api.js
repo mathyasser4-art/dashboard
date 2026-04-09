@@ -1,4 +1,4 @@
-const URL = 'https://abacus-2ntk.onrender.com/school/getSchool'
+const URL = 'https://backend-production-6752.up.railway.app/school/getSchool'
 
 const getAllSchool = (setAllSchools, setLoading) => {
     setLoading(true)
