@@ -1,15 +1,12 @@
 const URL = 'https://abacus-2ntk.onrender.com/question/updateQuestion/'
-const Token = localStorage.getItem('O_authDB')
 
 const updateQuestion = (data, questionID, setserverOperationError, setServerOperationLoading, setQuesionAdded) => {
     setServerOperationLoading(true)
     fetch(`${URL}${questionID}`, {
         method: 'put',
-        headers: {
-            'authrization': `pracYas09${Token}`
-        }, 
         body: data
     })
+
         .then((response) => response.json())
         .then((responseJson) => {
             if (responseJson.message === 'success') {

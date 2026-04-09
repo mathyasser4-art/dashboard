@@ -31,22 +31,20 @@ function App() {
       }
     });
   }, []);
-  const isAuth = localStorage.getItem('O_authDB')
   return (
     <>
-      {(isAuth) ? <Navbar /> : ''}
+      <Navbar />
       <Routes>
-        <Route path='/auth' element={<Navigate to='/questionType' />} />
         <Route path='/' element={<Navigate to='/questionType' />} />
-        <Route path='/questionType' element={isAuth ? <QuestionType /> : <Navigate to='/auth' />} />
-        <Route path='/subject/:questionTypeName/:questionTypeID' element={isAuth ? <Subject /> : <Navigate to='/auth' />} />
-        <Route path='/unit/:questionTypeName/:questionTypeID/:subjectID' element={isAuth ? <Unit /> : <Navigate to='/auth' />} />
-        <Route path='/chapter/:questionTypeName/:chapterID/:questionTypeID/:unitID/:subjectID' element={isAuth ? <Chapter /> : <Navigate to='/auth' />} />
-        <Route path='/addQuestion/:questionTypeName/:chapterName/:chapterID/:questionTypeID/:unitID/:subjectID/:questionNum' element={isAuth ? <AddQuestion /> : <Navigate to='/auth' />} />
-        <Route path='/updateQuestion/:questionTypeName/:questionID/:questionTypeID/:unitID/:subjectID' element={isAuth ? <UpdateQuestion /> : <Navigate to='/auth' />} />
-        <Route path='/school' element={isAuth ? <School /> : <Navigate to='/auth' />} />
-        <Route path='/users' element={isAuth ? <Users /> : <Navigate to='/auth' />} />
-        <Route path='/aiGenerate/:questionTypeName/:chapterName/:chapterID/:questionTypeID/:unitID/:subjectID' element={isAuth ? <AiGenerate /> : <Navigate to='/auth' />} />
+        <Route path='/questionType' element={<QuestionType />} />
+        <Route path='/subject/:questionTypeName/:questionTypeID' element={<Subject />} />
+        <Route path='/unit/:questionTypeName/:questionTypeID/:subjectID' element={<Unit />} />
+        <Route path='/chapter/:questionTypeName/:chapterID/:questionTypeID/:unitID/:subjectID' element={<Chapter />} />
+        <Route path='/addQuestion/:questionTypeName/:chapterName/:chapterID/:questionTypeID/:unitID/:subjectID/:questionNum' element={<AddQuestion />} />
+        <Route path='/updateQuestion/:questionTypeName/:questionID/:questionTypeID/:unitID/:subjectID' element={<UpdateQuestion />} />
+        <Route path='/school' element={<School />} />
+        <Route path='/users' element={<Users />} />
+        <Route path='/aiGenerate/:questionTypeName/:chapterName/:chapterID/:questionTypeID/:unitID/:subjectID' element={<AiGenerate />} />
       </Routes>
     </>
   );

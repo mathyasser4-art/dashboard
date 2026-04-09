@@ -1,15 +1,14 @@
 const URL = 'https://abacus-2ntk.onrender.com/user/get'
-const Token = localStorage.getItem('O_authDB')
 
 const getUsers = (pageNumber, setLoading, setAllClients, setPageNumber, setTotalPage) => {
     setLoading(true)
     fetch(`${URL}?page=${pageNumber}`, {
         method: 'get',
         headers: {
-            'Content-Type': 'application/json',
-            'authrization': `pracYas09${Token}`
+            'Content-Type': 'application/json'
         },
     })
+
         .then((response) => response.json())
         .then((responseJson) => {
             if (responseJson.message === 'success') {

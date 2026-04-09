@@ -1,15 +1,14 @@
 const URL = 'https://abacus-2ntk.onrender.com/unit/deleteUnit'
-const Token = localStorage.getItem('O_authDB')
 
 const deleteUnit = (questionTypeID, unitID, subjectID, setserverOperationError, setServerOperationLoading, setAllUnit) => {
     setServerOperationLoading(true)
     fetch(`${URL}/${questionTypeID}/${unitID}/${subjectID}`, {
         method: 'delete',
         headers: {
-            'Content-Type': 'application/json',
-            'authrization': `pracYas09${Token}`
+            'Content-Type': 'application/json'
         },
     })
+
         .then((response) => response.json())
         .then((responseJson) => {
             if (responseJson.message === 'success') {

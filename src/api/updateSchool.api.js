@@ -1,16 +1,15 @@
 const URL = 'https://abacus-2ntk.onrender.com/school/updateSchool'
-const Token = localStorage.getItem('O_authDB')
 
 const updateSchool = (data, schoolID, setserverOperationError, setServerOperationLoading, setAllSchools) => {
     setServerOperationLoading(true)
     fetch(`${URL}/${schoolID}`, {
         method: 'put',
         headers: {
-            'Content-Type': 'application/json',
-            'authrization': `pracYas09${Token}`
+            'Content-Type': 'application/json'
         },
         body: JSON.stringify(data)
     })
+
         .then((response) => response.json())
         .then((responseJson) => {
             if (responseJson.message === 'success') {

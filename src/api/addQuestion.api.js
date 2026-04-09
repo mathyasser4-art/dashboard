@@ -1,13 +1,8 @@
 const URL = 'https://abacus-2ntk.onrender.com/question/addQuestion'
-const Token = localStorage.getItem('O_authDB')
-
 const addQuestion = (data, setserverOperationError, setServerOperationLoading, setQuesionAdded, setQuesionID, questionType, setQuesionGraphAdded) => {
     setServerOperationLoading(true)
     fetch(`${URL}`, {
         method: 'post',
-        headers: {
-            'authrization': `pracYas09${Token}`
-        },
         body: data
     })
         .then((response) => response.json())

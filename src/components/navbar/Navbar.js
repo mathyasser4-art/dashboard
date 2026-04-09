@@ -6,11 +6,6 @@ import './Navbar.css'
 
 const Navbar = () => {
 
-    const logOut = () => {
-        localStorage.removeItem('O_authDB')
-        window.location.reload();
-    }
-
     return (
         <nav>
             <div className='nav-container d-flex justify-content-space-between align-items-center'>
@@ -18,7 +13,6 @@ const Navbar = () => {
                 <div className='d-flex align-items-center school'>
                     <Link to={'/users'}><i class="fa fa-user" aria-hidden="true"></i></Link>
                     <Link to={'/school'}><i class="fa fa-graduation-cap" aria-hidden="true"></i></Link>
-                    <p className='button' onClick={logOut}>logOut</p>
                 </div>
             </div>
         </nav>

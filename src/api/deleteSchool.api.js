@@ -1,15 +1,14 @@
 const URL = 'https://abacus-2ntk.onrender.com/school/deleteSchool'
-const Token = localStorage.getItem('O_authDB')
 
 const deleteSchool = (schoolID, setserverOperationError, setServerOperationLoading, setAllSchools) => {
     setServerOperationLoading(true)
     fetch(`${URL}/${schoolID}`, {
         method: 'delete',
         headers: {
-            'Content-Type': 'application/json',
-            'authrization': `pracYas09${Token}`
+            'Content-Type': 'application/json'
         },
     })
+
         .then((response) => response.json())
         .then((responseJson) => {
             if (responseJson.message === 'success') {

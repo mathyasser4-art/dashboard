@@ -1,16 +1,15 @@
 const URL = 'https://abacus-2ntk.onrender.com/system/addSystem'
-const Token = localStorage.getItem('O_authDB')
 
 const addSystem = (data, setserverOperationError, setServerOperationLoading, setAllSystem) => {
     setServerOperationLoading(true)
     fetch(URL, {
         method: 'post',
         headers: {
-            'Content-Type': 'application/json',
-            'authrization': `pracYas09${Token}`
+            'Content-Type': 'application/json'
         },
         body: JSON.stringify(data)
     })
+
         .then((response) => response.json())
         .then((responseJson) => {
             if (responseJson.message === 'success') {
