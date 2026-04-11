@@ -1,132 +1,333 @@
 .ai-generate-page {
-    padding: 7rem 2rem 2rem;
-    background-color: #f0f2f5;
+    padding: 7rem 5.5rem 4rem;
     min-height: 100vh;
 }
 
-.ai-workspace {
-    display: flex;
-    gap: 2rem;
-    max-width: 1200px;
+/* ── Form container ─────────────────────────────────────────────────────── */
+.ai-form-container {
+    max-width: 680px;
     margin: 0 auto;
-    height: calc(100vh - 10rem);
+    background-color: #fff;
+    border-radius: 16px;
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.2), 0 3px 8px 0 rgba(0, 0, 0, 0.19);
+    padding: 2.5rem 2.5rem 2rem;
 }
 
-.ai-chat-container {
-    flex: 1;
+/* ── Header ─────────────────────────────────────────────────────────────── */
+.ai-header {
     display: flex;
-    flex-direction: column;
-    background: white;
-    border-radius: 12px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-    overflow: hidden;
-}
-
-.ai-chat-history {
-    flex: 1;
-    overflow-y: auto;
-    padding: 1.5rem;
-    display: flex;
-    flex-direction: column;
+    align-items: center;
     gap: 1rem;
-    background: #f8f9fa;
+    margin-bottom: 1.8rem;
+    padding-bottom: 1.4rem;
+    border-bottom: 2px solid rgb(240, 240, 255);
 }
 
-.chat-bubble {
-    padding: 0.8rem 1.2rem;
-    border-radius: 18px;
-    max-width: 80%;
-    font-size: 0.95rem;
-    line-height: 1.4;
+.ai-header-icon {
+    font-size: 2.8rem;
+    line-height: 1;
 }
 
-.chat-bubble.user {
-    align-self: flex-end;
-    background: #007bff;
-    color: white;
-    border-bottom-right-radius: 4px;
+.ai-page-title {
+    font-size: 1.6rem;
+    font-weight: 700;
+    margin-bottom: 0.25rem !important;
 }
 
-.chat-bubble.model {
-    align-self: flex-start;
-    background: white;
-    color: #333;
-    border: 1px solid #ddd;
-    border-bottom-left-radius: 4px;
+.ai-page-subtitle {
+    font-size: 1rem;
+    color: #666;
 }
 
-.ai-chat-input-area {
-    padding: 1rem;
-    border-top: 1px solid #eee;
-    background: white;
+.ai-chapter-name {
+    color: rgb(3, 3, 173);
+    font-weight: 600;
 }
 
-.ai-key-input {
-    width: 100%;
-    padding: 0.5rem;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    margin-bottom: 0.5rem;
-    font-size: 0.8rem;
-}
-
-.ai-chat-textarea {
-    width: 100%;
-    padding: 0.8rem;
-    border: 1px solid #ddd;
+/* ── Error ──────────────────────────────────────────────────────────────── */
+.ai-error {
+    background-color: rgb(255, 240, 240);
+    border: 1px solid rgb(224, 5, 5);
     border-radius: 8px;
-    resize: none;
-    height: 80px;
-    font-family: inherit;
-    outline: none;
+    padding: 0.75rem 1rem;
+    margin-bottom: 1.2rem;
+    font-size: 0.95rem;
 }
 
-.ai-chat-actions {
+/* ── Fields ─────────────────────────────────────────────────────────────── */
+.ai-field {
+    margin-bottom: 1.4rem;
+}
+
+.ai-label {
     display: flex;
+    align-items: center;
     justify-content: space-between;
+    font-weight: 600;
+    color: rgb(56, 56, 56);
+    font-size: 0.95rem;
+    margin-bottom: 0.55rem;
+}
+
+.ai-key-link {
+    font-size: 0.82rem;
+    font-weight: 400;
+    color: rgb(3, 3, 173);
+    text-decoration: underline;
+}
+
+.ai-key-link:hover {
+    opacity: 0.75;
+}
+
+.ai-key-saved {
+    font-size: 0.8rem;
+    color: rgb(1, 130, 1);
+    margin-top: 0.35rem;
+}
+
+.ai-input {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border: 1px solid rgb(94, 93, 93);
+    border-radius: 8px;
+    font-size: 1rem;
+    outline: none;
+    box-sizing: border-box;
+    transition: border-color 0.2s;
+}
+
+.ai-input:focus {
+    border-color: rgb(3, 3, 173);
+    box-shadow: 0 0 0 3px rgba(3, 3, 173, 0.1);
+}
+
+.ai-textarea {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border: 1px solid rgb(94, 93, 93);
+    border-radius: 8px;
+    font-size: 1rem;
+    outline: none;
+    box-sizing: border-box;
+    resize: vertical;
+    font-family: inherit;
+    transition: border-color 0.2s;
+}
+
+.ai-textarea:focus {
+    border-color: rgb(3, 3, 173);
+    box-shadow: 0 0 0 3px rgba(3, 3, 173, 0.1);
+}
+
+.ai-field-help {
+    margin-top: 0.45rem;
+    font-size: 0.85rem;
+    color: #666;
+}
+
+.ai-upload-box {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+    border: 2px dashed rgb(171, 171, 214);
+    border-radius: 12px;
+    padding: 1rem 1.1rem;
+    background-color: rgb(248, 248, 255);
+    cursor: pointer;
+    transition: border-color 0.2s, background-color 0.2s;
+}
+
+.ai-upload-box:hover {
+    border-color: rgb(3, 3, 173);
+    background-color: rgb(242, 242, 255);
+}
+
+.ai-file-input {
+    display: none;
+}
+
+.ai-upload-title {
+    font-weight: 700;
+    color: rgb(3, 3, 173);
+}
+
+.ai-upload-subtitle {
+    font-size: 0.88rem;
+    color: #666;
+}
+
+.ai-file-pill {
+    margin-top: 0.8rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    padding: 0.7rem 0.9rem;
+    border-radius: 10px;
+    background-color: rgb(240, 240, 255);
+    border: 1px solid rgb(209, 209, 250);
+}
+
+.ai-file-name {
+    font-size: 0.92rem;
+    color: rgb(56, 56, 56);
+    word-break: break-word;
+}
+
+.ai-file-remove {
+    border: none;
+    background: transparent;
+    color: rgb(199, 0, 0);
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.ai-file-remove:hover {
+    text-decoration: underline;
+}
+
+/* ── Radio groups ───────────────────────────────────────────────────────── */
+.ai-radio-group,
+.ai-checkbox-group {
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+}
+
+.ai-radio-option {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1.1rem;
+    border: 2px solid #ddd;
+    border-radius: 30px;
+    cursor: pointer;
+    font-size: 0.95rem;
+    color: rgb(56, 56, 56);
+    transition: border-color 0.2s, background-color 0.2s;
+    user-select: none;
+}
+
+.ai-radio-option input[type="radio"],
+.ai-radio-option input[type="checkbox"] {
+    width: 1rem;
+    height: 1rem;
+    margin: 0;
+    accent-color: rgb(3, 3, 173);
+}
+
+.ai-radio-selected {
+    border-color: rgb(3, 3, 173);
+    background-color: rgb(240, 240, 255);
+    color: rgb(3, 3, 173);
+    font-weight: 600;
+}
+
+/* ── Actions ────────────────────────────────────────────────────────────── */
+.ai-actions {
+    margin-top: 2rem;
+    gap: 0.75rem;
+}
+
+.ai-generate-btn {
+    font-size: 1.05rem !important;
+    padding: 0.75rem 1.4rem !important;
+}
+
+.cancel-button {
+    background-color: rgb(236, 4, 4);
+}
+
+/* ── Progress / Loading screen ──────────────────────────────────────────── */
+.ai-progress-card,
+.ai-success-card {
+    background-color: #fff;
+    border-radius: 16px;
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.2), 0 3px 8px 0 rgba(0, 0, 0, 0.19);
+    padding: 3rem 2.5rem;
+    max-width: 480px;
+    width: 100%;
+    text-align: center;
+    gap: 1rem;
+}
+
+.ai-spinner {
+    width: 56px;
+    height: 56px;
+    border: 4px solid rgb(3, 3, 173);
+    border-bottom-color: transparent;
+    border-radius: 50%;
+    animation: ai-spin 1s linear infinite;
+    margin-bottom: 0.5rem;
+}
+
+@keyframes ai-spin {
+    0%   { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.ai-progress-title {
+    font-size: 1.3rem !important;
+    font-weight: 700;
+}
+
+.ai-progress-sub {
+    color: #666;
+    font-size: 0.95rem;
+}
+
+.ai-progress-bar-track {
+    width: 100%;
+    background-color: #e8e8f5;
+    border-radius: 30px;
+    height: 12px;
+    overflow: hidden;
     margin-top: 0.5rem;
 }
 
-.ai-attach-btn {
-    cursor: pointer;
-    color: #007bff;
+.ai-progress-bar-fill {
+    height: 100%;
+    background-color: rgb(3, 3, 173);
+    border-radius: 30px;
+    transition: width 0.3s ease;
+}
+
+.ai-progress-percent {
     font-size: 0.9rem;
-    display: flex;
-    align-items: center;
+    color: rgb(3, 3, 173);
+    font-weight: 600;
 }
 
-.ai-review-container {
-    width: 450px;
-    background: white;
-    border-radius: 12px;
-    padding: 1.5rem;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-    display: flex;
-    flex-direction: column;
+/* ── Success screen ─────────────────────────────────────────────────────── */
+.ai-success-icon {
+    width: 80px !important;
+    margin-bottom: 0.5rem;
 }
 
-.ai-review-list {
-    flex: 1;
-    overflow-y: auto;
-    margin: 1rem 0;
+.ai-success-title {
+    font-size: 1.6rem !important;
+    font-weight: 700;
 }
 
-.ai-review-item {
-    border-bottom: 1px solid #eee;
-    padding: 1rem 0;
+.ai-success-sub {
+    color: #555;
+    font-size: 1rem;
+    max-width: 360px;
 }
 
-.save-all-btn {
-    width: 100%;
-    background: #28a745 !important;
-}
-
-.ai-saving-overlay {
-    position: fixed;
-    top: 0; left: 0; right: 0; bottom: 0;
-    background: rgba(0,0,0,0.5);
-    display: flex;
+.ai-success-buttons {
+    gap: 0.75rem;
+    margin-top: 0.5rem;
+    flex-wrap: wrap;
     justify-content: center;
-    align-items: center;
-    z-index: 1000;
+}
+
+.ai-more-btn {
+    background-color: rgb(12, 12, 212) !important;
+    opacity: 0.8;
+}
+
+.ai-more-btn:hover {
+    opacity: 1;
 }
