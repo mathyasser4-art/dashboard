@@ -9,15 +9,21 @@ const BASE_URL = 'https://backend-production-6752.up.railway.app/question/addQue
 const saveAiQuestion = (questionData, chapterID) => {
     const data = new FormData()
 
-    // Wrap question text in <p> to match Quill HTML format
-    data.append('question', questionData.question)
+    // Handle Abacus Grid format
+    let finalQuestion = questionData.question;
+    if (questionData.gridRows) {
+        finalQuestion = JSON.stringify(questionData.gridRows);
+    }
+
+    data.append('question', finalQuestion)
     data.append('questionPoints', questionData.questionPoints || 2)
     data.append('chapter', chapterID)
     data.append('index', 'last')
 
     if (questionData.type === 'MCQ') {
         data.append('typeOfAnswer', 'MCQ')
-        data.append('correctAnswer', questionData.correctAnswer)
+        const correct = questionData.correctAnswer || (Array.isArray(questionData.answer) ? questionData.answer[0] : '');
+        data.append('correctAnswer', correct)
         data.append('autoCorrect', true)
         if (Array.isArray(questionData.wrongAnswer)) {
             questionData.wrongAnswer.forEach(w => data.append('wrongAnswer', w))

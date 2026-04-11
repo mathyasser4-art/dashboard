@@ -5,6 +5,7 @@ import addAnswerPic from '../../api/addAnswerPic.api'
 import addGraphQuestion from '../../api/addGraphQuestion.api';
 import correctIcon from '../../correct-icon.png'
 import NumeralKeyboard from '../../components/NumeralKeyboard/NumeralKeyboard'
+import AbacusGrid from '../../components/AbacusGrid/AbacusGrid';
 import '../../reusable.css';
 import './AddQuestion.css'
 
@@ -13,6 +14,11 @@ const AddQuestion = () => {
     const [serverOperationLoading, setServerOperationLoading] = useState(false)
     const [serverLoadingPic, setServerLoadingPic] = useState(false)
     const [question, setQuestion] = useState('')
+    const [useGrid, setUseGrid] = useState(true)
+    const [gridRows, setGridRows] = useState([
+        { op: '+', val: '' },
+        { op: '+', val: '' }
+    ])
     const [answer, setAnswer] = useState('')
     const [questionPoint, setQuestionPoint] = useState('')
     const [allAnswer, setAllAnswer] = useState([])
@@ -94,7 +100,9 @@ const AddQuestion = () => {
     }
 
     const addNewQuestion = () => {
-        if (!question.trim() || questionPoint === '' || allAnswer.length === 0 && questionType === 'Essay Question'
+        const finalQuestion = useGrid ? JSON.stringify(gridRows) : question;
+        
+        if (!finalQuestion || questionPoint === '' || allAnswer.length === 0 && questionType === 'Essay Question'
             || mcqAnswerFr === '' && questionType === 'MCQ Question' || mcqAnswerFs === '' && questionType === 'MCQ Question'
             || mcqAnswerSe === '' && questionType === 'MCQ Question' || mcqAnswerTh === '' && questionType === 'MCQ Question') {
             setserverOperationError('Enter the question data first!')
@@ -102,7 +110,7 @@ const AddQuestion = () => {
             const data = new FormData()
             if (questionPic)
                 data.append('image', questionPic)
-            data.append('question', question)
+            data.append('question', finalQuestion)
             if (questionType == 'Essay Question') {
                 allAnswer.map(item => {
                     data.append('answer', item)
@@ -158,6 +166,7 @@ const AddQuestion = () => {
 
     const newQuestion = () => {
         setQuestion('')
+        setGridRows([{ op: '+', val: '' }, { op: '+', val: '' }])
         setQuesionFullAdded(false)
         setAnswer('')
         setQuestionPoint('')
@@ -247,6 +256,18 @@ const AddQuestion = () => {
                         <label htmlFor="berries_1">Auto Correct</label>
                     </div>
                 </fieldset>
+                <fieldset>
+                    <legend>Question Format</legend>
+                    <div className='d-flex align-items-center'>
+                        <input type="radio" id="format_grid" checked={useGrid} onChange={() => setUseGrid(true)} />
+                        <label htmlFor="format_grid">Abacus Grid (Recommended)</label>
+                    </div>
+                    <div className='d-flex align-items-center'>
+                        <input type="radio" id="format_text" checked={!useGrid} onChange={() => setUseGrid(false)} />
+                        <label htmlFor="format_text">Plain Text</label>
+                    </div>
+                </fieldset>
+                
                 {(previewQuestionPic) ? <img className='preview-img' src={previewQuestionPic} alt="" /> : <label>
                     <div>
                         <i className="fa fa-camera" aria-hidden="true"></i>
@@ -254,13 +275,18 @@ const AddQuestion = () => {
                     </div>
                     <input className='select-input' type="file" name='images' onChange={selectQuestionPic} accept='.png, .jpg, .jpeg, .webp' />
                 </label>}
-                <textarea
-                    rows={4}
-                    placeholder="Type your question here"
-                    value={question}
-                    onChange={e => setQuestion(e.target.value)}
-                    style={{ boxSizing: 'border-box', outline: 'none', resize: 'vertical', fontFamily: 'inherit', fontSize: '1rem' }}
-                />
+
+                {useGrid ? (
+                    <AbacusGrid rows={gridRows} onChange={setGridRows} />
+                ) : (
+                    <textarea
+                        rows={4}
+                        placeholder="Type your question here"
+                        value={question}
+                        onChange={e => setQuestion(e.target.value)}
+                        style={{ boxSizing: 'border-box', outline: 'none', resize: 'vertical', fontFamily: 'inherit', fontSize: '1rem' }}
+                    />
+                )}
                 {(questionType == 'Essay Question') ? <>
                     <div className="keyboard essay-answer">
                         <div className="essay-math-input">

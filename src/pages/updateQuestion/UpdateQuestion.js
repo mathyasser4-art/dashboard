@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import NumeralKeyboard from '../../components/NumeralKeyboard/NumeralKeyboard';
+import AbacusGrid from '../../components/AbacusGrid/AbacusGrid';
 import getQuestionDetails from '../../api/getQuestionDetails.api'
 import updateQuestion from '../../api/updateQuestion.api'
 import addAnswerPic from '../../api/addAnswerPic.api'
@@ -11,6 +12,7 @@ import './UpdateQuestion.css'
 
 const stripHtml = (html) => {
     if (!html) return ''
+    if (html.startsWith('[') && html.endsWith(']')) return html // Don't strip if it looks like JSON grid
     return html
         .replace(/<br\s*\/?>/gi, '\n')
         .replace(/<\/p>/gi, '\n')
@@ -30,6 +32,11 @@ const UpdateQuestion = () => {
     const [loading, setLoading] = useState(true)
     const [serverLoadingPic, setServerLoadingPic] = useState(false)
     const [question, setQuestion] = useState('')
+    const [useGrid, setUseGrid] = useState(false)
+    const [gridRows, setGridRows] = useState([
+        { op: '+', val: '' },
+        { op: '+', val: '' }
+    ])
     const [answer, setAnswer] = useState('')
     const [questionPoint, setQuestionPoint] = useState('')
     const [allAnswer, setAllAnswer] = useState([])
@@ -59,7 +66,24 @@ const UpdateQuestion = () => {
     // Strip HTML tags from question loaded from backend once on load
     useEffect(() => {
         if (!loading && question && !questionStripped.current) {
-            setQuestion(stripHtml(question))
+            const stripped = stripHtml(question);
+            try {
+                // Try to parse as grid JSON
+                if (stripped.startsWith('[') && stripped.endsWith(']')) {
+                    const parsed = JSON.parse(stripped);
+                    if (Array.isArray(parsed) && parsed.length > 0 && parsed[0].op) {
+                        setGridRows(parsed);
+                        setUseGrid(true);
+                        setQuestion('');
+                    } else {
+                        setQuestion(stripped);
+                    }
+                } else {
+                    setQuestion(stripped);
+                }
+            } catch (e) {
+                setQuestion(stripped);
+            }
             questionStripped.current = true
         }
     }, [loading, question])
@@ -91,7 +115,9 @@ const UpdateQuestion = () => {
     }
 
     const handleUpadteQuestion = () => {
-        if (!question.trim() || questionPoint === '' || allAnswer.length === 0 && questionType === 'Essay'
+        const finalQuestion = useGrid ? JSON.stringify(gridRows) : question;
+        
+        if (!finalQuestion || questionPoint === '' || allAnswer.length === 0 && questionType === 'Essay'
             || mcqAnswerFr === '' && questionType === 'MCQ' || mcqAnswerFs === '' && questionType === 'MCQ'
             || mcqAnswerSe === '' && questionType === 'MCQ' || mcqAnswerTh === '' && questionType === 'MCQ') {
             setserverOperationError('Enter the question data first!')
@@ -99,7 +125,7 @@ const UpdateQuestion = () => {
             const data = new FormData()
             if (questionPic)
                 data.append('image', questionPic)
-            data.append('question', question)
+            data.append('question', finalQuestion)
             if (questionType == 'Essay') {
                 allAnswer.map(item => {
                     data.append('answer', item)
@@ -195,13 +221,30 @@ const UpdateQuestion = () => {
                     <p>This question is {questionDetails.autoCorrect ? 'Auto Correct' : 'Not Auto Correct'}</p>
                     {autoCorrectLoading ? <p>Waiting...</p> : <p onClick={handleUpadteAutoCorrect}>(Chanage it to {questionDetails.autoCorrect ? 'Not Auto Correct' : 'Auto Correct'})</p>}
                 </div>
-                <textarea
-                    rows={4}
-                    placeholder="Type your question here"
-                    value={question}
-                    onChange={e => setQuestion(e.target.value)}
-                    style={{ boxSizing: 'border-box', outline: 'none', resize: 'vertical', fontFamily: 'inherit', fontSize: '1rem' }}
-                />
+
+                <fieldset>
+                    <legend>Question Format</legend>
+                    <div className='d-flex align-items-center'>
+                        <input type="radio" id="format_grid" checked={useGrid} onChange={() => setUseGrid(true)} />
+                        <label htmlFor="format_grid">Abacus Grid</label>
+                    </div>
+                    <div className='d-flex align-items-center'>
+                        <input type="radio" id="format_text" checked={!useGrid} onChange={() => setUseGrid(false)} />
+                        <label htmlFor="format_text">Plain Text</label>
+                    </div>
+                </fieldset>
+
+                {useGrid ? (
+                    <AbacusGrid rows={gridRows} onChange={setGridRows} />
+                ) : (
+                    <textarea
+                        rows={4}
+                        placeholder="Type your question here"
+                        value={question}
+                        onChange={e => setQuestion(e.target.value)}
+                        style={{ boxSizing: 'border-box', outline: 'none', resize: 'vertical', fontFamily: 'inherit', fontSize: '1rem' }}
+                    />
+                )}
                 {(questionType == 'Essay') ? <div className="keyboard essay-answer">
                     <div className="essay-math-input">
                         <input
