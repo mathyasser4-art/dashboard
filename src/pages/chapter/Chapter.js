@@ -35,6 +35,21 @@ const Chapter = () => {
     const [destinationUnitID, setDestinationUnitID] = useState('')
     const [destinationChapterID, setDestinationChapterID] = useState('')
     const [availableUnits, setAvailableUnits] = useState([])
+
+    // Worksheet-level send state
+    const [worksheetDestinationLoading, setWorksheetDestinationLoading] = useState(false)
+    const [worksheetDestinationUnitsLoading, setWorksheetDestinationUnitsLoading] = useState(false)
+    const [worksheetDestQuestionTypeID, setWorksheetDestQuestionTypeID] = useState('')
+    const [worksheetDestSubjectID, setWorksheetDestSubjectID] = useState('')
+    const [worksheetDestUnitID, setWorksheetDestUnitID] = useState('')
+    const [worksheetDestChapterID, setWorksheetDestChapterID] = useState('')
+    const [worksheetAvailableUnits, setWorksheetAvailableUnits] = useState([])
+    const [worksheetSending, setWorksheetSending] = useState(false)
+    const [worksheetProgress, setWorksheetProgress] = useState({ current: 0, total: 0 })
+    const [worksheetError, setWorksheetError] = useState(null)
+    const [worksheetDone, setWorksheetDone] = useState(false)
+    const [worksheetSavedCount, setWorksheetSavedCount] = useState(0)
+
     const { chapterID, questionTypeID, unitID, questionTypeName, subjectID } = useParams()
     const navigate = useNavigate()
 
@@ -49,9 +64,18 @@ const Chapter = () => {
             setDestinationChapterID('')
             return
         }
-
         getUnit(destinationQuestionTypeID, destinationSubjectID, setAvailableUnits, setDestinationUnitsLoading)
     }, [destinationQuestionTypeID, destinationSubjectID])
+
+    useEffect(() => {
+        if (!worksheetDestQuestionTypeID || !worksheetDestSubjectID) {
+            setWorksheetAvailableUnits([])
+            setWorksheetDestUnitID('')
+            setWorksheetDestChapterID('')
+            return
+        }
+        getUnit(worksheetDestQuestionTypeID, worksheetDestSubjectID, setWorksheetAvailableUnits, setWorksheetDestinationUnitsLoading)
+    }, [worksheetDestQuestionTypeID, worksheetDestSubjectID])
 
     const getchapterDetails = async () => {
         await getChapter(chapterID, setChapterDetails, setLoading)
@@ -110,6 +134,15 @@ const Chapter = () => {
         )
     }
 
+    const getWorksheetSubjectOptions = () => {
+        return allSystems.flatMap(system =>
+            (system.subjects || []).map(subject => ({
+                ...subject,
+                systemName: system.systemName
+            }))
+        )
+    }
+
     const getSelectedUnit = () => {
         return availableUnits.find(item => item._id === destinationUnitID)
     }
@@ -117,6 +150,15 @@ const Chapter = () => {
     const getSelectedChapter = () => {
         const selectedUnit = getSelectedUnit()
         return selectedUnit?.chapters?.find(item => item._id === destinationChapterID)
+    }
+
+    const getWorksheetSelectedUnit = () => {
+        return worksheetAvailableUnits.find(item => item._id === worksheetDestUnitID)
+    }
+
+    const getWorksheetSelectedChapter = () => {
+        const selectedUnit = getWorksheetSelectedUnit()
+        return selectedUnit?.chapters?.find(item => item._id === worksheetDestChapterID)
     }
 
     const openMoveCopyPopup = async (question) => {
@@ -145,11 +187,44 @@ const Chapter = () => {
         setDestinationUnitsLoading(false)
     }
 
-    const cloneQuestionData = (questionDetails) => {
+    // ── Worksheet send popup ─────────────────────────────────────────────────
+
+    const openSendWorksheetPopup = async () => {
+        setWorksheetError(null)
+        setWorksheetDone(false)
+        setWorksheetSavedCount(0)
+        setWorksheetSending(false)
+        setWorksheetProgress({ current: 0, total: 0 })
+        setWorksheetDestQuestionTypeID(questionTypeID)
+        setWorksheetDestSubjectID(subjectID)
+        setWorksheetDestUnitID(unitID)
+        setWorksheetDestChapterID(chapterID)
+        setWorksheetDestinationLoading(true)
+        document.querySelector('.send-worksheet-popup').classList.replace('d-none', 'd-flex')
+
+        await new Promise(resolve => getSystem(setAllSystems, resolveLoading => {
+            setWorksheetDestinationLoading(resolveLoading)
+            if (resolveLoading === false) resolve()
+        }))
+
+        setWorksheetDestinationLoading(false)
+    }
+
+    const closeSendWorksheetPopup = () => {
+        if (worksheetSending) return
+        document.querySelector('.send-worksheet-popup').classList.replace('d-flex', 'd-none')
+        setWorksheetError(null)
+        setWorksheetDone(false)
+        setWorksheetSavedCount(0)
+        setWorksheetSending(false)
+        setWorksheetProgress({ current: 0, total: 0 })
+    }
+
+    const cloneQuestionData = (questionDetails, targetChapterID) => {
         const data = new FormData()
         data.append('question', questionDetails.question)
         data.append('questionPoints', questionDetails.questionPoints)
-        data.append('chapter', destinationChapterID)
+        data.append('chapter', targetChapterID)
         data.append('index', 'last')
 
         if (questionDetails.questionPic) {
@@ -231,6 +306,19 @@ const Chapter = () => {
         return true
     }
 
+    const validateWorksheetDestination = () => {
+        if (!worksheetDestQuestionTypeID || !worksheetDestSubjectID || !worksheetDestUnitID || !worksheetDestChapterID) {
+            setWorksheetError('Choose the target section, subject, unit/year, and chapter/exam first.')
+            return false
+        }
+        const questions = chapterDetails.questions || []
+        if (questions.length === 0) {
+            setWorksheetError('This chapter has no questions to send.')
+            return false
+        }
+        return true
+    }
+
     const handleCopyQuestion = async () => {
         if (!validateDestination()) return
 
@@ -239,7 +327,7 @@ const Chapter = () => {
             setserverOperationError(null)
 
             const selectedQuestion = await getFullQuestionDetails(questionToMove._id)
-            const data = cloneQuestionData(selectedQuestion)
+            const data = cloneQuestionData(selectedQuestion, destinationChapterID)
 
             await new Promise((resolve, reject) => {
                 addQuestion(
@@ -292,9 +380,104 @@ const Chapter = () => {
         }
     }
 
+    const handleCopyWorksheet = async () => {
+        if (!validateWorksheetDestination()) return
+
+        const questions = chapterDetails.questions || []
+        setWorksheetSending(true)
+        setWorksheetError(null)
+        setWorksheetDone(false)
+        setWorksheetProgress({ current: 0, total: questions.length })
+
+        let saved = 0
+        for (let i = 0; i < questions.length; i++) {
+            setWorksheetProgress({ current: i + 1, total: questions.length })
+            try {
+                const fullDetails = await getFullQuestionDetails(questions[i]._id)
+                const data = cloneQuestionData(fullDetails, worksheetDestChapterID)
+
+                await new Promise((resolve, reject) => {
+                    addQuestion(
+                        data,
+                        error => { if (error) reject(new Error(error)) },
+                        () => { },
+                        () => resolve(),
+                        () => { },
+                        fullDetails.typeOfAnswer,
+                        () => resolve()
+                    )
+                })
+                saved++
+            } catch (e) {
+                console.error(`Failed to copy question ${i + 1}:`, e)
+            }
+            await new Promise(r => setTimeout(r, 250))
+        }
+
+        setWorksheetSavedCount(saved)
+        setWorksheetSending(false)
+        setWorksheetDone(true)
+    }
+
+    const handleMoveWorksheet = async () => {
+        if (!validateWorksheetDestination()) return
+
+        const questions = chapterDetails.questions || []
+        setWorksheetSending(true)
+        setWorksheetError(null)
+        setWorksheetDone(false)
+        setWorksheetProgress({ current: 0, total: questions.length })
+
+        let saved = 0
+        for (let i = 0; i < questions.length; i++) {
+            setWorksheetProgress({ current: i + 1, total: questions.length })
+            try {
+                const fullDetails = await getFullQuestionDetails(questions[i]._id)
+                const data = new FormData()
+                data.append('question', fullDetails.question)
+                data.append('questionPoints', fullDetails.questionPoints)
+                data.append('chapter', worksheetDestChapterID)
+
+                if (fullDetails.typeOfAnswer === 'Essay') {
+                    fullDetails.answer?.forEach(item => data.append('answer', item))
+                }
+                if (fullDetails.typeOfAnswer === 'MCQ') {
+                    data.append('correctAnswer', fullDetails.correctAnswer || fullDetails.wrongAnswer?.[0] || '')
+                    fullDetails.wrongAnswer?.forEach(item => data.append('wrongAnswer', item))
+                }
+
+                await new Promise((resolve, reject) => {
+                    updateQuestion(
+                        data,
+                        questions[i]._id,
+                        error => { if (error) reject(new Error(error)) },
+                        () => { },
+                        () => resolve()
+                    )
+                })
+                saved++
+            } catch (e) {
+                console.error(`Failed to move question ${i + 1}:`, e)
+            }
+            await new Promise(r => setTimeout(r, 250))
+        }
+
+        setWorksheetSavedCount(saved)
+        setWorksheetSending(false)
+        setWorksheetDone(true)
+        getchapterDetails()
+    }
+
     const selectedUnit = getSelectedUnit()
     const selectedChapter = getSelectedChapter()
     const subjectOptions = getSubjectOptions()
+
+    const worksheetSelectedUnit = getWorksheetSelectedUnit()
+    const worksheetSelectedChapter = getWorksheetSelectedChapter()
+    const worksheetSubjectOptions = getWorksheetSubjectOptions()
+    const worksheetProgressPercent = worksheetProgress.total > 0
+        ? Math.round((worksheetProgress.current / worksheetProgress.total) * 100)
+        : 0
 
     if (loading) return (<div className='loading-container'><div className='d-flex justify-content-center'><span className="page-loader"></span></div></div>)
 
@@ -305,6 +488,12 @@ const Chapter = () => {
                 <div className='chapter-icon'>
                     <Link to={`/addQuestion/${questionTypeName}/${chapterDetails.chapterName}/${chapterID}/${questionTypeID}/${unitID}/${subjectID}/last`}><i className="fa fa-plus icon" aria-hidden="true"></i></Link>
                     <Link to={`/aiGenerate/${questionTypeName}/${encodeURIComponent(chapterDetails.chapterName)}/${chapterID}/${questionTypeID}/${unitID}/${subjectID}`} title="Generate questions with AI"><i className="fa fa-magic icon ai-icon" aria-hidden="true"></i></Link>
+                    <i
+                        onClick={openSendWorksheetPopup}
+                        className="fa fa-paper-plane send-worksheet-icon"
+                        aria-hidden="true"
+                        title="Copy or move entire worksheet"
+                    ></i>
                     <i onClick={() => openUpdatePopup(chapterDetails.chapterName)} className="fa fa-pencil" aria-hidden="true"></i>
                     <i onClick={openDeleteChapterPopup} className="fa fa-trash-o" aria-hidden="true"></i>
                 </div>
@@ -322,6 +511,8 @@ const Chapter = () => {
                     </div>
                 )
             })}
+
+            {/* ── Update chapter popup ──────────────────────────────────────────── */}
             <div className="update-chapter-popup chapter-popup d-none justify-content-center align-items-center">
                 <div>
                     <p className='text-color'>Update <span>{(questionTypeName == 'Past Papers') ? 'exam' : 'chapter'}</span> name</p>
@@ -332,6 +523,7 @@ const Chapter = () => {
                 </div>
             </div>
 
+            {/* ── Delete question popup ─────────────────────────────────────────── */}
             <div className="delete-question-popup chapter-popup d-none justify-content-center align-items-center">
                 <div>
                     <p className='text-color'>Are you sure you want to delete this question?</p>
@@ -341,6 +533,7 @@ const Chapter = () => {
                 </div>
             </div>
 
+            {/* ── Delete chapter popup ──────────────────────────────────────────── */}
             <div className="delete-chapter-popup chapter-popup d-none justify-content-center align-items-center">
                 <div>
                     <p className='text-color'>Are you sure you want to delete this <span>{(questionTypeName == 'Past Papers') ? 'exam' : 'chapter'}</span>?</p>
@@ -351,6 +544,7 @@ const Chapter = () => {
                 </div>
             </div>
 
+            {/* ── Move / copy single question popup ────────────────────────────── */}
             <div className="move-question-popup chapter-popup d-none justify-content-center align-items-center">
                 <div className='move-question-card'>
                     <p className='text-color'>Copy or move question</p>
@@ -398,6 +592,97 @@ const Chapter = () => {
                         <button className='button move-question-btn' onClick={handleMoveQuestion}>{(serverOperationLoading) ? <span className="button-loader"></span> : 'Move'}</button>
                         <button className='button cancel-button' onClick={closeMoveCopyPopup}>Cancel</button>
                     </div>
+                </div>
+            </div>
+
+            {/* ── Send whole worksheet popup ────────────────────────────────────── */}
+            <div className="send-worksheet-popup chapter-popup d-none justify-content-center align-items-center">
+                <div className='move-question-card'>
+                    {worksheetDone ? (
+                        <>
+                            <p className='text-color worksheet-done-title'>✅ Done!</p>
+                            <p className='worksheet-done-sub'>
+                                {worksheetSavedCount} of {chapterDetails.questions?.length || 0} questions sent successfully.
+                            </p>
+                            <div className='move-question-actions'>
+                                <button className='button cancel-button' onClick={closeSendWorksheetPopup}>Close</button>
+                            </div>
+                        </>
+                    ) : worksheetSending ? (
+                        <>
+                            <p className='text-color'>Sending worksheet...</p>
+                            <p className='worksheet-progress-label'>
+                                Question {worksheetProgress.current} of {worksheetProgress.total}
+                            </p>
+                            <div className='worksheet-progress-track'>
+                                <div
+                                    className='worksheet-progress-fill'
+                                    style={{ width: `${worksheetProgressPercent}%` }}
+                                ></div>
+                            </div>
+                            <p className='worksheet-progress-percent'>{worksheetProgressPercent}%</p>
+                        </>
+                    ) : (
+                        <>
+                            <div className='worksheet-popup-header'>
+                                <span className='worksheet-popup-icon'>📤</span>
+                                <p className='text-color'>Send entire worksheet</p>
+                            </div>
+                            <p className='worksheet-popup-sub'>
+                                {chapterDetails.questions?.length || 0} questions will be copied or moved to the destination you choose below.
+                            </p>
+                            {worksheetError ? <p className='text-error'>{worksheetError}</p> : ''}
+
+                            {worksheetDestinationLoading ? (
+                                <p>Loading destinations...</p>
+                            ) : (
+                                <>
+                                    <select value={worksheetDestQuestionTypeID} onChange={e => setWorksheetDestQuestionTypeID(e.target.value)}>
+                                        <option value=''>Choose section</option>
+                                        {QUESTION_TYPE_OPTIONS.map(item => (
+                                            <option key={item.id} value={item.id}>{item.name}</option>
+                                        ))}
+                                    </select>
+
+                                    <select value={worksheetDestSubjectID} onChange={e => setWorksheetDestSubjectID(e.target.value)}>
+                                        <option value=''>Choose subject</option>
+                                        {worksheetSubjectOptions.map(item => (
+                                            <option key={item._id} value={item._id}>{item.systemName} - {item.subjectName}</option>
+                                        ))}
+                                    </select>
+
+                                    <select value={worksheetDestUnitID} onChange={e => setWorksheetDestUnitID(e.target.value)}>
+                                        <option value=''>Choose {(worksheetDestQuestionTypeID === PAST_PAPERS_QUESTION_TYPE_ID) ? 'year' : 'unit'}</option>
+                                        {worksheetAvailableUnits.map(item => (
+                                            <option key={item._id} value={item._id}>{item.unitName}</option>
+                                        ))}
+                                    </select>
+
+                                    <select
+                                        value={worksheetDestChapterID}
+                                        onChange={e => setWorksheetDestChapterID(e.target.value)}
+                                        disabled={!worksheetSelectedUnit || worksheetDestinationUnitsLoading}
+                                    >
+                                        <option value=''>Choose {(worksheetDestQuestionTypeID === PAST_PAPERS_QUESTION_TYPE_ID) ? 'exam' : 'chapter'}</option>
+                                        {worksheetSelectedUnit?.chapters?.map(item => (
+                                            <option key={item._id} value={item._id}>{item.chapterName}</option>
+                                        ))}
+                                    </select>
+
+                                    {(worksheetSelectedUnit || worksheetSelectedChapter) ? <div className='move-target-preview'>
+                                        {worksheetSelectedUnit ? <p><strong>{(worksheetDestQuestionTypeID === PAST_PAPERS_QUESTION_TYPE_ID) ? 'Year' : 'Unit'}:</strong> {worksheetSelectedUnit.unitName}</p> : ''}
+                                        {worksheetSelectedChapter ? <p><strong>{(worksheetDestQuestionTypeID === PAST_PAPERS_QUESTION_TYPE_ID) ? 'Exam' : 'Chapter'}:</strong> {worksheetSelectedChapter.chapterName}</p> : ''}
+                                    </div> : ''}
+                                </>
+                            )}
+
+                            <div className='move-question-actions'>
+                                <button className='button' onClick={handleCopyWorksheet}>Copy All</button>
+                                <button className='button move-question-btn' onClick={handleMoveWorksheet}>Move All</button>
+                                <button className='button cancel-button' onClick={closeSendWorksheetPopup}>Cancel</button>
+                            </div>
+                        </>
+                    )}
                 </div>
             </div>
         </div>
