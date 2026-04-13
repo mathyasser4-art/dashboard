@@ -5,7 +5,12 @@ import correctIcon from '../../correct-icon.png'
 import '../../reusable.css'
 import './AiGenerate.css'
 
-const GEMINI_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent'
+const GEMINI_MODELS = [
+    'gemini-2.5-flash',
+    'gemini-2.0-flash',
+    'gemini-1.5-flash',
+]
+const GEMINI_BASE = 'https://generativelanguage.googleapis.com/v1beta/models'
 const ACCEPTED_FILE_TYPES = '.pdf,.doc,.docx,.png,.jpg,.jpeg,.webp'
 
 const fileToBase64 = (file) => new Promise((resolve, reject) => {
@@ -120,6 +125,7 @@ const AiGenerate = () => {
     const [skillLevel, setSkillLevel] = useState('Basic (direct)')
     const [attachmentFile, setAttachmentFile] = useState(null)
     const [status, setStatus] = useState('idle') // idle | generating | saving | done | error
+    const [generatingMsg, setGeneratingMsg] = useState('')
     const [progress, setProgress] = useState({ current: 0, total: 0 })
     const [savedCount, setSavedCount] = useState(0)
     const [errorMessage, setErrorMessage] = useState('')
@@ -195,6 +201,7 @@ const AiGenerate = () => {
 
         localStorage.setItem('gemini_api_key', apiKey.trim())
         setStatus('generating')
+        setGeneratingMsg('Connecting to Gemini AI...')
 
         let questions = []
         try {
@@ -210,22 +217,45 @@ const AiGenerate = () => {
 
             const parts = await buildGeminiParts({ prompt, attachmentFile })
 
-            const response = await fetch(`${GEMINI_URL}?key=${apiKey.trim()}`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    contents: [{ parts }],
-                    generationConfig: { temperature: 0.7, maxOutputTokens: 8192 }
-                })
-            })
-
-            if (!response.ok) {
-                const errJson = await response.json().catch(() => ({}))
-                const errMsg = errJson?.error?.message || `Gemini API error (${response.status})`
-                throw new Error(errMsg)
+            // Try each model in order; retry overloaded models once after 6 s
+            let geminiData = null
+            let lastError = null
+            outer: for (const model of GEMINI_MODELS) {
+                for (let attempt = 0; attempt < 2; attempt++) {
+                    if (attempt > 0) {
+                        setGeneratingMsg(`${model} is busy — retrying in 6 s...`)
+                        await new Promise(r => setTimeout(r, 6000))
+                    }
+                    setGeneratingMsg(`Generating with ${model}...`)
+                    const response = await fetch(
+                        `${GEMINI_BASE}/${model}:generateContent?key=${apiKey.trim()}`,
+                        {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                contents: [{ parts }],
+                                generationConfig: { temperature: 0.7, maxOutputTokens: 8192 }
+                            })
+                        }
+                    )
+                    if (response.ok) {
+                        geminiData = await response.json()
+                        break outer
+                    }
+                    const errJson = await response.json().catch(() => ({}))
+                    const errMsg = errJson?.error?.message || `Gemini API error (${response.status})`
+                    const isOverload = response.status === 503 || response.status === 429 ||
+                        errMsg.toLowerCase().includes('high demand') ||
+                        errMsg.toLowerCase().includes('overloaded') ||
+                        errMsg.toLowerCase().includes('quota')
+                    lastError = new Error(`[${model}] ${errMsg}`)
+                    if (!isOverload) break outer  // hard error – don't try other models
+                    // overload: try once more, then fall through to next model
+                }
             }
 
-            const geminiData = await response.json()
+            if (!geminiData) throw lastError
+
             const rawText = geminiData?.candidates?.[0]?.content?.parts?.[0]?.text || ''
             const cleanedText = stripMarkdown(rawText)
             const parsed = JSON.parse(cleanedText)
@@ -300,7 +330,7 @@ const AiGenerate = () => {
                     {status === 'generating' && (
                         <>
                             <p className="ai-progress-title text-color">Generating questions with AI...</p>
-                            <p className="ai-progress-sub">This may take a few seconds</p>
+                            <p className="ai-progress-sub">{generatingMsg || 'This may take a few seconds'}</p>
                         </>
                     )}
                     {status === 'saving' && (
