@@ -249,6 +249,17 @@
     color: rgb(10, 120, 95);
 }
 
+.ai-provider-logo-grok {
+    color: rgb(30, 30, 30);
+    font-style: normal;
+}
+
+.ai-provider-grok-active {
+    border-color: rgb(30, 30, 30);
+    background-color: rgb(240, 240, 240);
+    color: rgb(30, 30, 30);
+}
+
 .ai-openai-note {
     font-size: 0.78rem;
     font-weight: 400;

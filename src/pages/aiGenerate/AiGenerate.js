@@ -17,8 +17,13 @@ const OPENAI_URL = 'https://api.openai.com/v1/chat/completions'
 const OPENAI_MODEL = 'gpt-4o-mini'
 const OPENAI_IMAGE_TYPES = /\.(png|jpe?g|webp)$/i
 
+// ── Grok (xAI) config ─────────────────────────────────────────────────────────
+const GROK_URL = 'https://api.x.ai/v1/chat/completions'
+const GROK_MODEL = 'grok-2-vision-1212'
+
 const ACCEPTED_FILE_TYPES_GEMINI = '.pdf,.doc,.docx,.png,.jpg,.jpeg,.webp'
 const ACCEPTED_FILE_TYPES_OPENAI = '.png,.jpg,.jpeg,.webp'
+const ACCEPTED_FILE_TYPES_GROK = '.png,.jpg,.jpeg,.webp'
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -189,14 +194,53 @@ const callOpenAI = async ({ prompt, attachmentFile, apiKey, onStatus }) => {
     return data.choices?.[0]?.message?.content || ''
 }
 
+const callGrok = async ({ prompt, attachmentFile, apiKey, onStatus }) => {
+    onStatus('Generating with Grok grok-2-vision...')
+    const userContent = []
+
+    if (attachmentFile && OPENAI_IMAGE_TYPES.test(attachmentFile.name)) {
+        const base64 = await fileToBase64(attachmentFile)
+        const mimeType = attachmentFile.type || 'image/jpeg'
+        userContent.push({
+            type: 'image_url',
+            image_url: { url: `data:${mimeType};base64,${base64}` }
+        })
+    }
+
+    userContent.push({ type: 'text', text: prompt })
+
+    const response = await fetch(GROK_URL, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${apiKey}`
+        },
+        body: JSON.stringify({
+            model: GROK_MODEL,
+            messages: [{ role: 'user', content: userContent }],
+            temperature: 0.7,
+            max_tokens: 8192
+        })
+    })
+
+    if (!response.ok) {
+        const errJson = await response.json().catch(() => ({}))
+        throw new Error(errJson?.error?.message || `Grok API error (${response.status})`)
+    }
+
+    const data = await response.json()
+    return data.choices?.[0]?.message?.content || ''
+}
+
 // ── Component ─────────────────────────────────────────────────────────────────
 
 const AiGenerate = () => {
     const { chapterID, chapterName, questionTypeID, unitID, questionTypeName, subjectID } = useParams()
 
-    const [provider, setProvider] = useState('gemini') // 'gemini' | 'openai'
+    const [provider, setProvider] = useState('gemini') // 'gemini' | 'openai' | 'grok'
     const [geminiKey, setGeminiKey] = useState('')
     const [openaiKey, setOpenaiKey] = useState('')
+    const [grokKey, setGrokKey] = useState('')
     const [topic, setTopic] = useState('')
     const [questionType, setQuestionType] = useState('MCQ')
     const [skillLevel, setSkillLevel] = useState('Basic (direct)')
@@ -207,21 +251,24 @@ const AiGenerate = () => {
     const [savedCount, setSavedCount] = useState(0)
     const [errorMessage, setErrorMessage] = useState('')
 
-    const apiKey = provider === 'gemini' ? geminiKey : openaiKey
-    const setApiKey = provider === 'gemini' ? setGeminiKey : setOpenaiKey
+    const apiKey = provider === 'gemini' ? geminiKey : provider === 'openai' ? openaiKey : grokKey
+    const setApiKey = provider === 'gemini' ? setGeminiKey : provider === 'openai' ? setOpenaiKey : setGrokKey
 
     useEffect(() => {
         const savedGemini = localStorage.getItem('gemini_api_key')
         const savedOpenAI = localStorage.getItem('openai_api_key')
+        const savedGrok = localStorage.getItem('grok_api_key')
         if (savedGemini) setGeminiKey(savedGemini)
         if (savedOpenAI) setOpenaiKey(savedOpenAI)
+        if (savedGrok) setGrokKey(savedGrok)
     }, [])
 
     // When switching provider, clear incompatible files
     const handleProviderChange = (newProvider) => {
         setProvider(newProvider)
         setErrorMessage('')
-        if (newProvider === 'openai' && attachmentFile && !OPENAI_IMAGE_TYPES.test(attachmentFile.name)) {
+        const imageOnly = newProvider === 'openai' || newProvider === 'grok'
+        if (imageOnly && attachmentFile && !OPENAI_IMAGE_TYPES.test(attachmentFile.name)) {
             setAttachmentFile(null)
         }
     }
@@ -253,10 +300,10 @@ const AiGenerate = () => {
         const validForGemini = geminiTypes.includes(file.type) || geminiExt.test(file.name)
         const validForOpenAI = openaiExt.test(file.name) || ['image/png', 'image/jpeg', 'image/jpg', 'image/webp'].includes(file.type)
 
-        if (provider === 'openai' && !validForOpenAI) {
+        if ((provider === 'openai' || provider === 'grok') && !validForOpenAI) {
             event.target.value = ''
             setAttachmentFile(null)
-            setErrorMessage('OpenAI only supports image files (PNG, JPG, JPEG, WEBP). Use a text description for other content.')
+            setErrorMessage(`${provider === 'grok' ? 'Grok' : 'OpenAI'} only supports image files (PNG, JPG, JPEG, WEBP). Use a text description for other content.`)
             return
         }
         if (provider === 'gemini' && !validForGemini) {
@@ -285,7 +332,8 @@ const AiGenerate = () => {
         setErrorMessage('')
 
         if (provider === 'gemini') localStorage.setItem('gemini_api_key', apiKey.trim())
-        else localStorage.setItem('openai_api_key', apiKey.trim())
+        else if (provider === 'openai') localStorage.setItem('openai_api_key', apiKey.trim())
+        else localStorage.setItem('grok_api_key', apiKey.trim())
 
         setStatus('generating')
         setGeneratingMsg('Connecting...')
@@ -305,8 +353,10 @@ const AiGenerate = () => {
             let rawText = ''
             if (provider === 'gemini') {
                 rawText = await callGemini({ prompt, attachmentFile, apiKey: apiKey.trim(), onStatus: setGeneratingMsg })
-            } else {
+            } else if (provider === 'openai') {
                 rawText = await callOpenAI({ prompt, attachmentFile, apiKey: apiKey.trim(), onStatus: setGeneratingMsg })
+            } else {
+                rawText = await callGrok({ prompt, attachmentFile, apiKey: apiKey.trim(), onStatus: setGeneratingMsg })
             }
 
             const cleanedText = stripMarkdown(rawText)
@@ -439,6 +489,16 @@ const AiGenerate = () => {
                             OpenAI
                             <span className="ai-provider-badge ai-provider-badge-paid">Paid</span>
                         </button>
+                        <button
+                            type="button"
+                            className={`ai-provider-btn ${provider === 'grok' ? 'ai-provider-grok-active' : ''}`}
+                            onClick={() => handleProviderChange('grok')}
+                            title="xAI Grok — paid, vision support, OpenAI-compatible"
+                        >
+                            <span className="ai-provider-logo ai-provider-logo-grok">𝕏</span>
+                            Grok
+                            <span className="ai-provider-badge ai-provider-badge-paid">Paid</span>
+                        </button>
                     </div>
                 </div>
 
@@ -447,24 +507,28 @@ const AiGenerate = () => {
                 {/* ── API Key ───────────────────────────────────────────────── */}
                 <div className="ai-field">
                     <label className="ai-label">
-                        {provider === 'gemini' ? 'Gemini API Key' : 'OpenAI API Key'}
+                        {provider === 'gemini' ? 'Gemini API Key' : provider === 'openai' ? 'OpenAI API Key' : 'Grok API Key (xAI)'}
                         <a
                             href={provider === 'gemini'
                                 ? 'https://aistudio.google.com/app/apikey'
-                                : 'https://platform.openai.com/api-keys'}
+                                : provider === 'openai'
+                                    ? 'https://platform.openai.com/api-keys'
+                                    : 'https://console.x.ai/'}
                             target="_blank"
                             rel="noreferrer"
                             className="ai-key-link"
                         >
                             {provider === 'gemini'
                                 ? 'Get a free key at ai.google.dev →'
-                                : 'Get a key at platform.openai.com →'}
+                                : provider === 'openai'
+                                    ? 'Get a key at platform.openai.com →'
+                                    : 'Get a key at console.x.ai →'}
                         </a>
                     </label>
                     <input
                         type="password"
                         className="ai-input"
-                        placeholder={provider === 'gemini' ? 'AIzaSy...' : 'sk-...'}
+                        placeholder={provider === 'gemini' ? 'AIzaSy...' : provider === 'grok' ? 'xai-...' : 'sk-...'}
                         value={apiKey}
                         onChange={e => setApiKey(e.target.value)}
                     />
@@ -492,7 +556,7 @@ const AiGenerate = () => {
                 <div className="ai-field">
                     <label className="ai-label">
                         Attach questions file
-                        {provider === 'openai' && (
+                        {(provider === 'openai' || provider === 'grok') && (
                             <span className="ai-openai-note">Images only (PNG, JPG, WEBP)</span>
                         )}
                     </label>
@@ -500,7 +564,7 @@ const AiGenerate = () => {
                         <input
                             type="file"
                             className="ai-file-input"
-                            accept={provider === 'gemini' ? ACCEPTED_FILE_TYPES_GEMINI : ACCEPTED_FILE_TYPES_OPENAI}
+                            accept={provider === 'gemini' ? ACCEPTED_FILE_TYPES_GEMINI : provider === 'grok' ? ACCEPTED_FILE_TYPES_GROK : ACCEPTED_FILE_TYPES_OPENAI}
                             onChange={handleFileChange}
                         />
                         <span className="ai-upload-title">
@@ -509,7 +573,9 @@ const AiGenerate = () => {
                         <span className="ai-upload-subtitle">
                             {provider === 'gemini'
                                 ? 'Supported: PDF, DOC, DOCX, PNG, JPG, JPEG, WEBP'
-                                : 'Supported: PNG, JPG, JPEG, WEBP — PDFs not supported by OpenAI'}
+                                : provider === 'grok'
+                                    ? 'Supported: PNG, JPG, JPEG, WEBP — PDFs not supported by Grok'
+                                    : 'Supported: PNG, JPG, JPEG, WEBP — PDFs not supported by OpenAI'}
                         </span>
                     </label>
                     {attachmentFile && (
