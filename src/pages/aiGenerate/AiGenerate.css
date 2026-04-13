@@ -187,6 +187,77 @@
     text-decoration: underline;
 }
 
+/* ── Provider selector ──────────────────────────────────────────────────── */
+.ai-provider-group {
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+}
+
+.ai-provider-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.55rem 1.2rem;
+    border: 2px solid #ddd;
+    border-radius: 30px;
+    background: #fff;
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: rgb(56, 56, 56);
+    cursor: pointer;
+    transition: border-color 0.2s, background-color 0.2s, color 0.2s;
+}
+
+.ai-provider-btn:hover {
+    border-color: #aaa;
+}
+
+.ai-provider-logo {
+    font-size: 1rem;
+    font-weight: 900;
+    color: rgb(3, 3, 173);
+}
+
+.ai-provider-logo-openai {
+    color: rgb(16, 163, 127);
+}
+
+.ai-provider-badge {
+    font-size: 0.7rem;
+    font-weight: 700;
+    padding: 0.1rem 0.45rem;
+    border-radius: 20px;
+    background-color: rgb(220, 248, 228);
+    color: rgb(0, 120, 40);
+}
+
+.ai-provider-badge-paid {
+    background-color: rgb(255, 243, 220);
+    color: rgb(160, 80, 0);
+}
+
+.ai-provider-gemini-active {
+    border-color: rgb(3, 3, 173);
+    background-color: rgb(240, 240, 255);
+    color: rgb(3, 3, 173);
+}
+
+.ai-provider-openai-active {
+    border-color: rgb(16, 163, 127);
+    background-color: rgb(236, 253, 245);
+    color: rgb(10, 120, 95);
+}
+
+.ai-openai-note {
+    font-size: 0.78rem;
+    font-weight: 400;
+    color: rgb(160, 80, 0);
+    background-color: rgb(255, 243, 220);
+    padding: 0.15rem 0.55rem;
+    border-radius: 20px;
+}
+
 /* ── Radio groups ───────────────────────────────────────────────────────── */
 .ai-radio-group,
 .ai-checkbox-group {

@@ -5,35 +5,36 @@ import correctIcon from '../../correct-icon.png'
 import '../../reusable.css'
 import './AiGenerate.css'
 
+// ── Gemini config ─────────────────────────────────────────────────────────────
 const GEMINI_MODELS = [
     { name: 'gemini-2.5-flash', version: 'v1beta' },
-    { name: 'gemini-1.5-flash', version: 'v1'     },
+    { name: 'gemini-1.5-flash', version: 'v1' },
 ]
 const GEMINI_BASE = 'https://generativelanguage.googleapis.com'
-const ACCEPTED_FILE_TYPES = '.pdf,.doc,.docx,.png,.jpg,.jpeg,.webp'
+
+// ── OpenAI config ─────────────────────────────────────────────────────────────
+const OPENAI_URL = 'https://api.openai.com/v1/chat/completions'
+const OPENAI_MODEL = 'gpt-4o-mini'
+const OPENAI_IMAGE_TYPES = /\.(png|jpe?g|webp)$/i
+
+const ACCEPTED_FILE_TYPES_GEMINI = '.pdf,.doc,.docx,.png,.jpg,.jpeg,.webp'
+const ACCEPTED_FILE_TYPES_OPENAI = '.png,.jpg,.jpeg,.webp'
+
+// ── Helpers ───────────────────────────────────────────────────────────────────
 
 const fileToBase64 = (file) => new Promise((resolve, reject) => {
     const reader = new FileReader()
     reader.onload = () => {
         const result = reader.result || ''
         const base64 = String(result).split(',')[1]
-        if (!base64) {
-            reject(new Error('Failed to convert the selected file.'))
-            return
-        }
+        if (!base64) { reject(new Error('Failed to convert the selected file.')); return }
         resolve(base64)
     }
     reader.onerror = () => reject(new Error('Failed to read the selected file.'))
     reader.readAsDataURL(file)
 })
 
-const buildPrompt = (
-    questionType,
-    topic,
-    chapterName,
-    skillLevel,
-    attachmentContext
-) => {
+const buildPrompt = (questionType, topic, chapterName, skillLevel, attachmentContext) => {
     const typeLabel = questionType === 'MCQ' ? 'multiple-choice (MCQ)' : 'open-ended essay'
     const mcqShape = `{
   "question": "Question text here",
@@ -82,20 +83,14 @@ Return this exact JSON structure:
 }`
 }
 
-const stripMarkdown = (text) => {
-    return text
-        .replace(/```json\s*/gi, '')
-        .replace(/```\s*/gi, '')
-        .trim()
-}
+const stripMarkdown = (text) => text
+    .replace(/```json\s*/gi, '')
+    .replace(/```\s*/gi, '')
+    .trim()
 
 const buildGeminiParts = async ({ prompt, attachmentFile }) => {
     const parts = [{ text: prompt }]
-
-    if (!attachmentFile) {
-        return parts
-    }
-
+    if (!attachmentFile) return parts
     const normalizedMimeType = attachmentFile.type || (
         attachmentFile.name.toLowerCase().endsWith('.doc')
             ? 'application/msword'
@@ -104,21 +99,104 @@ const buildGeminiParts = async ({ prompt, attachmentFile }) => {
                 : 'application/octet-stream'
     )
     const base64Data = await fileToBase64(attachmentFile)
-
-    parts.push({
-        inlineData: {
-            mimeType: normalizedMimeType,
-            data: base64Data
-        }
-    })
-
+    parts.push({ inlineData: { mimeType: normalizedMimeType, data: base64Data } })
     return parts
 }
+
+// ── Provider generate functions ───────────────────────────────────────────────
+
+const callGemini = async ({ prompt, attachmentFile, apiKey, onStatus }) => {
+    const parts = await buildGeminiParts({ prompt, attachmentFile })
+    let geminiData = null
+    let lastError = null
+
+    outer: for (const model of GEMINI_MODELS) {
+        const { name: modelName, version: apiVersion } = model
+        for (let attempt = 0; attempt < 2; attempt++) {
+            if (attempt > 0) {
+                onStatus(`${modelName} is busy — retrying in 6 s...`)
+                await new Promise(r => setTimeout(r, 6000))
+            }
+            onStatus(`Generating with ${modelName}...`)
+            const response = await fetch(
+                `${GEMINI_BASE}/${apiVersion}/models/${modelName}:generateContent?key=${apiKey}`,
+                {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        contents: [{ parts }],
+                        generationConfig: { temperature: 0.7, maxOutputTokens: 8192 }
+                    })
+                }
+            )
+            if (response.ok) {
+                geminiData = await response.json()
+                break outer
+            }
+            const errJson = await response.json().catch(() => ({}))
+            const errMsg = errJson?.error?.message || `Gemini API error (${response.status})`
+            const isTryNext = response.status === 503 || response.status === 429 ||
+                errMsg.toLowerCase().includes('high demand') ||
+                errMsg.toLowerCase().includes('overloaded') ||
+                errMsg.toLowerCase().includes('quota') ||
+                errMsg.toLowerCase().includes('no longer available') ||
+                errMsg.toLowerCase().includes('deprecated') ||
+                errMsg.toLowerCase().includes('not found')
+            lastError = new Error(`[${modelName}] ${errMsg}`)
+            if (!isTryNext) break outer
+        }
+    }
+
+    if (!geminiData) throw lastError
+    return geminiData?.candidates?.[0]?.content?.parts?.[0]?.text || ''
+}
+
+const callOpenAI = async ({ prompt, attachmentFile, apiKey, onStatus }) => {
+    onStatus('Generating with OpenAI gpt-4o-mini...')
+    const userContent = []
+
+    if (attachmentFile && OPENAI_IMAGE_TYPES.test(attachmentFile.name)) {
+        const base64 = await fileToBase64(attachmentFile)
+        const mimeType = attachmentFile.type || 'image/jpeg'
+        userContent.push({
+            type: 'image_url',
+            image_url: { url: `data:${mimeType};base64,${base64}` }
+        })
+    }
+
+    userContent.push({ type: 'text', text: prompt })
+
+    const response = await fetch(OPENAI_URL, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${apiKey}`
+        },
+        body: JSON.stringify({
+            model: OPENAI_MODEL,
+            messages: [{ role: 'user', content: userContent }],
+            temperature: 0.7,
+            max_tokens: 8192
+        })
+    })
+
+    if (!response.ok) {
+        const errJson = await response.json().catch(() => ({}))
+        throw new Error(errJson?.error?.message || `OpenAI API error (${response.status})`)
+    }
+
+    const data = await response.json()
+    return data.choices?.[0]?.message?.content || ''
+}
+
+// ── Component ─────────────────────────────────────────────────────────────────
 
 const AiGenerate = () => {
     const { chapterID, chapterName, questionTypeID, unitID, questionTypeName, subjectID } = useParams()
 
-    const [apiKey, setApiKey] = useState('')
+    const [provider, setProvider] = useState('gemini') // 'gemini' | 'openai'
+    const [geminiKey, setGeminiKey] = useState('')
+    const [openaiKey, setOpenaiKey] = useState('')
     const [topic, setTopic] = useState('')
     const [questionType, setQuestionType] = useState('MCQ')
     const [skillLevel, setSkillLevel] = useState('Basic (direct)')
@@ -129,46 +207,59 @@ const AiGenerate = () => {
     const [savedCount, setSavedCount] = useState(0)
     const [errorMessage, setErrorMessage] = useState('')
 
+    const apiKey = provider === 'gemini' ? geminiKey : openaiKey
+    const setApiKey = provider === 'gemini' ? setGeminiKey : setOpenaiKey
+
     useEffect(() => {
-        const savedKey = localStorage.getItem('gemini_api_key')
-        if (savedKey) setApiKey(savedKey)
+        const savedGemini = localStorage.getItem('gemini_api_key')
+        const savedOpenAI = localStorage.getItem('openai_api_key')
+        if (savedGemini) setGeminiKey(savedGemini)
+        if (savedOpenAI) setOpenaiKey(savedOpenAI)
     }, [])
+
+    // When switching provider, clear incompatible files
+    const handleProviderChange = (newProvider) => {
+        setProvider(newProvider)
+        setErrorMessage('')
+        if (newProvider === 'openai' && attachmentFile && !OPENAI_IMAGE_TYPES.test(attachmentFile.name)) {
+            setAttachmentFile(null)
+        }
+    }
 
     const validate = () => {
         if (!apiKey.trim()) { setErrorMessage('API key is required'); return false }
         if (!topic.trim() && !attachmentFile) { setErrorMessage('Add a topic or attach a file'); return false }
         if (!skillLevel.trim()) { setErrorMessage('Skill level is required'); return false }
-
         if (attachmentFile && attachmentFile.size > 20 * 1024 * 1024) {
             setErrorMessage('Attached files must be smaller than 20 MB')
             return false
         }
-
         return true
     }
 
     const handleFileChange = async (event) => {
         const file = event.target.files?.[0] || null
         setErrorMessage('')
+        if (!file) { setAttachmentFile(null); return }
 
-        if (!file) {
+        const geminiTypes = [
+            'application/pdf', 'application/msword',
+            'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+            'image/png', 'image/jpeg', 'image/jpg', 'image/webp'
+        ]
+        const geminiExt = /\.(pdf|doc|docx|png|jpe?g|webp)$/i
+        const openaiExt = /\.(png|jpe?g|webp)$/i
+
+        const validForGemini = geminiTypes.includes(file.type) || geminiExt.test(file.name)
+        const validForOpenAI = openaiExt.test(file.name) || ['image/png', 'image/jpeg', 'image/jpg', 'image/webp'].includes(file.type)
+
+        if (provider === 'openai' && !validForOpenAI) {
+            event.target.value = ''
             setAttachmentFile(null)
+            setErrorMessage('OpenAI only supports image files (PNG, JPG, JPEG, WEBP). Use a text description for other content.')
             return
         }
-
-        const allowedMimeTypes = [
-            'application/pdf',
-            'application/msword',
-            'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-            'image/png',
-            'image/jpeg',
-            'image/jpg',
-            'image/webp'
-        ]
-
-        const hasSupportedExtension = /\.(pdf|doc|docx|png|jpe?g|webp)$/i.test(file.name)
-
-        if (!allowedMimeTypes.includes(file.type) && !hasSupportedExtension) {
+        if (provider === 'gemini' && !validForGemini) {
             event.target.value = ''
             setAttachmentFile(null)
             setErrorMessage('Please attach a PDF, Word, or image file.')
@@ -178,16 +269,11 @@ const AiGenerate = () => {
         try {
             if (file.name.toLowerCase().endsWith('.doc') && file.type !== 'application/msword') {
                 const arrayBuffer = await file.arrayBuffer()
-                const repairedFile = new File(
-                    [arrayBuffer],
-                    file.name,
-                    { type: 'application/msword' }
-                )
-                setAttachmentFile(repairedFile)
+                setAttachmentFile(new File([arrayBuffer], file.name, { type: 'application/msword' }))
                 return
             }
             setAttachmentFile(file)
-        } catch (error) {
+        } catch {
             event.target.value = ''
             setAttachmentFile(null)
             setErrorMessage('Failed to prepare the selected file.')
@@ -198,9 +284,11 @@ const AiGenerate = () => {
         if (!validate()) return
         setErrorMessage('')
 
-        localStorage.setItem('gemini_api_key', apiKey.trim())
+        if (provider === 'gemini') localStorage.setItem('gemini_api_key', apiKey.trim())
+        else localStorage.setItem('openai_api_key', apiKey.trim())
+
         setStatus('generating')
-        setGeneratingMsg('Connecting to Gemini AI...')
+        setGeneratingMsg('Connecting...')
 
         let questions = []
         try {
@@ -214,51 +302,13 @@ const AiGenerate = () => {
                     : ''
             )
 
-            const parts = await buildGeminiParts({ prompt, attachmentFile })
-
-            // Try each model in order; retry overloaded models once after 6 s
-            let geminiData = null
-            let lastError = null
-            outer: for (const model of GEMINI_MODELS) {
-                const { name: modelName, version: apiVersion } = model
-                for (let attempt = 0; attempt < 2; attempt++) {
-                    if (attempt > 0) {
-                        setGeneratingMsg(`${modelName} is busy — retrying in 6 s...`)
-                        await new Promise(r => setTimeout(r, 6000))
-                    }
-                    setGeneratingMsg(`Generating with ${modelName}...`)
-                    const response = await fetch(
-                        `${GEMINI_BASE}/${apiVersion}/models/${modelName}:generateContent?key=${apiKey.trim()}`,
-                        {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({
-                                contents: [{ parts }],
-                                generationConfig: { temperature: 0.7, maxOutputTokens: 8192 }
-                            })
-                        }
-                    )
-                    if (response.ok) {
-                        geminiData = await response.json()
-                        break outer
-                    }
-                    const errJson = await response.json().catch(() => ({}))
-                    const errMsg = errJson?.error?.message || `Gemini API error (${response.status})`
-                    const isTryNext = response.status === 503 || response.status === 429 ||
-                        errMsg.toLowerCase().includes('high demand') ||
-                        errMsg.toLowerCase().includes('overloaded') ||
-                        errMsg.toLowerCase().includes('quota') ||
-                        errMsg.toLowerCase().includes('no longer available') ||
-                        errMsg.toLowerCase().includes('deprecated')
-                    lastError = new Error(`[${modelName}] ${errMsg}`)
-                    if (!isTryNext) break outer  // hard error (e.g. bad API key) – stop immediately
-                    // overload: try once more, then fall through to next model
-                }
+            let rawText = ''
+            if (provider === 'gemini') {
+                rawText = await callGemini({ prompt, attachmentFile, apiKey: apiKey.trim(), onStatus: setGeneratingMsg })
+            } else {
+                rawText = await callOpenAI({ prompt, attachmentFile, apiKey: apiKey.trim(), onStatus: setGeneratingMsg })
             }
 
-            if (!geminiData) throw lastError
-
-            const rawText = geminiData?.candidates?.[0]?.content?.parts?.[0]?.text || ''
             const cleanedText = stripMarkdown(rawText)
             const parsed = JSON.parse(cleanedText)
             questions = parsed.questions || []
@@ -365,24 +415,56 @@ const AiGenerate = () => {
                     </div>
                 </div>
 
+                {/* ── Provider selector ─────────────────────────────────────── */}
+                <div className="ai-field">
+                    <label className="ai-label">AI Provider</label>
+                    <div className="ai-provider-group">
+                        <button
+                            type="button"
+                            className={`ai-provider-btn ${provider === 'gemini' ? 'ai-provider-gemini-active' : ''}`}
+                            onClick={() => handleProviderChange('gemini')}
+                            title="Google Gemini — free tier with image & PDF support"
+                        >
+                            <span className="ai-provider-logo">G</span>
+                            Gemini
+                            <span className="ai-provider-badge">Free</span>
+                        </button>
+                        <button
+                            type="button"
+                            className={`ai-provider-btn ${provider === 'openai' ? 'ai-provider-openai-active' : ''}`}
+                            onClick={() => handleProviderChange('openai')}
+                            title="OpenAI GPT-4o mini — paid, very reliable, image support"
+                        >
+                            <span className="ai-provider-logo ai-provider-logo-openai">⬡</span>
+                            OpenAI
+                            <span className="ai-provider-badge ai-provider-badge-paid">Paid</span>
+                        </button>
+                    </div>
+                </div>
+
                 {errorMessage && <p className="text-error ai-error">{errorMessage}</p>}
 
+                {/* ── API Key ───────────────────────────────────────────────── */}
                 <div className="ai-field">
                     <label className="ai-label">
-                        Gemini API Key
+                        {provider === 'gemini' ? 'Gemini API Key' : 'OpenAI API Key'}
                         <a
-                            href="https://aistudio.google.com/app/apikey"
+                            href={provider === 'gemini'
+                                ? 'https://aistudio.google.com/app/apikey'
+                                : 'https://platform.openai.com/api-keys'}
                             target="_blank"
                             rel="noreferrer"
                             className="ai-key-link"
                         >
-                            Get a free key at ai.google.dev →
+                            {provider === 'gemini'
+                                ? 'Get a free key at ai.google.dev →'
+                                : 'Get a key at platform.openai.com →'}
                         </a>
                     </label>
                     <input
                         type="password"
                         className="ai-input"
-                        placeholder="AIzaSy..."
+                        placeholder={provider === 'gemini' ? 'AIzaSy...' : 'sk-...'}
                         value={apiKey}
                         onChange={e => setApiKey(e.target.value)}
                     />
@@ -391,6 +473,7 @@ const AiGenerate = () => {
                     )}
                 </div>
 
+                {/* ── Topic ─────────────────────────────────────────────────── */}
                 <div className="ai-field">
                     <label className="ai-label">Topic / Description</label>
                     <textarea
@@ -405,18 +488,28 @@ const AiGenerate = () => {
                     </p>
                 </div>
 
+                {/* ── File upload ───────────────────────────────────────────── */}
                 <div className="ai-field">
-                    <label className="ai-label">Attach questions file</label>
+                    <label className="ai-label">
+                        Attach questions file
+                        {provider === 'openai' && (
+                            <span className="ai-openai-note">Images only (PNG, JPG, WEBP)</span>
+                        )}
+                    </label>
                     <label className="ai-upload-box">
                         <input
                             type="file"
                             className="ai-file-input"
-                            accept={ACCEPTED_FILE_TYPES}
+                            accept={provider === 'gemini' ? ACCEPTED_FILE_TYPES_GEMINI : ACCEPTED_FILE_TYPES_OPENAI}
                             onChange={handleFileChange}
                         />
-                        <span className="ai-upload-title">Upload PDF, Word, or image</span>
+                        <span className="ai-upload-title">
+                            {provider === 'gemini' ? 'Upload PDF, Word, or image' : 'Upload image'}
+                        </span>
                         <span className="ai-upload-subtitle">
-                            Supported: PDF, DOC, DOCX, PNG, JPG, JPEG, WEBP
+                            {provider === 'gemini'
+                                ? 'Supported: PDF, DOC, DOCX, PNG, JPG, JPEG, WEBP'
+                                : 'Supported: PNG, JPG, JPEG, WEBP — PDFs not supported by OpenAI'}
                         </span>
                     </label>
                     {attachmentFile && (
@@ -433,6 +526,7 @@ const AiGenerate = () => {
                     )}
                 </div>
 
+                {/* ── Question type ─────────────────────────────────────────── */}
                 <div className="ai-field">
                     <label className="ai-label">Question Type</label>
                     <div className="ai-radio-group">
@@ -459,6 +553,7 @@ const AiGenerate = () => {
                     </div>
                 </div>
 
+                {/* ── Skill level ───────────────────────────────────────────── */}
                 <div className="ai-field">
                     <label className="ai-label">Abacus Skill / Level</label>
                     <select
