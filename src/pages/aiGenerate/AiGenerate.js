@@ -7,7 +7,6 @@ import './AiGenerate.css'
 
 const GEMINI_MODELS = [
     'gemini-2.5-flash',
-    'gemini-2.0-flash',
     'gemini-1.5-flash',
 ]
 const GEMINI_BASE = 'https://generativelanguage.googleapis.com/v1beta/models'
@@ -244,12 +243,14 @@ const AiGenerate = () => {
                     }
                     const errJson = await response.json().catch(() => ({}))
                     const errMsg = errJson?.error?.message || `Gemini API error (${response.status})`
-                    const isOverload = response.status === 503 || response.status === 429 ||
+                    const isTryNext = response.status === 503 || response.status === 429 ||
                         errMsg.toLowerCase().includes('high demand') ||
                         errMsg.toLowerCase().includes('overloaded') ||
-                        errMsg.toLowerCase().includes('quota')
+                        errMsg.toLowerCase().includes('quota') ||
+                        errMsg.toLowerCase().includes('no longer available') ||
+                        errMsg.toLowerCase().includes('deprecated')
                     lastError = new Error(`[${model}] ${errMsg}`)
-                    if (!isOverload) break outer  // hard error – don't try other models
+                    if (!isTryNext) break outer  // hard error (e.g. bad API key) – stop immediately
                     // overload: try once more, then fall through to next model
                 }
             }
