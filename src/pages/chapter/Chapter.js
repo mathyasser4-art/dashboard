@@ -9,6 +9,7 @@ import getSystem from '../../api/getSystem.api'
 import getUnit from '../../api/getUnit.api'
 import addQuestion from '../../api/addQuestion.api'
 import updateQuestion from '../../api/updateQuestion.api'
+import reorderChapter from '../../api/reorderChapter.api'
 import '../../reusable.css'
 import './Chapter.css'
 
@@ -162,6 +163,10 @@ const Chapter = () => {
         if (dragOverIndex !== index) setDragOverIndex(index)
     }
 
+    const saveOrder = (questions) => {
+        reorderChapter(chapterID, questions.map(q => q._id))
+    }
+
     const handleDrop = (e, index) => {
         e.preventDefault()
         if (dragIndex === null || dragIndex === index) {
@@ -175,6 +180,7 @@ const Chapter = () => {
         setOrderedQuestions(reordered)
         setDragIndex(null)
         setDragOverIndex(null)
+        saveOrder(reordered)
     }
 
     const handleDragEnd = () => {
@@ -189,6 +195,7 @@ const Chapter = () => {
             [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]]
         }
         setOrderedQuestions(shuffled)
+        saveOrder(shuffled)
     }
 
     // ── Chapter operations ────────────────────────────────────────────────────
