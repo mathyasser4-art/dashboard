@@ -6,9 +6,8 @@ import '../../reusable.css'
 import './AiGenerate.css'
 
 const GEMINI_MODELS = [
-    { name: 'gemini-2.5-flash',       version: 'v1beta' },
-    { name: 'gemini-1.5-flash-latest', version: 'v1beta' },
-    { name: 'gemini-1.5-flash',        version: 'v1'    },
+    { name: 'gemini-2.5-flash', version: 'v1beta' },
+    { name: 'gemini-1.5-flash', version: 'v1'     },
 ]
 const GEMINI_BASE = 'https://generativelanguage.googleapis.com'
 const ACCEPTED_FILE_TYPES = '.pdf,.doc,.docx,.png,.jpg,.jpeg,.webp'
