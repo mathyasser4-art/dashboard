@@ -6,10 +6,11 @@ import '../../reusable.css'
 import './AiGenerate.css'
 
 const GEMINI_MODELS = [
-    'gemini-2.5-flash',
-    'gemini-1.5-flash',
+    { name: 'gemini-2.5-flash',       version: 'v1beta' },
+    { name: 'gemini-1.5-flash-latest', version: 'v1beta' },
+    { name: 'gemini-1.5-flash',        version: 'v1'    },
 ]
-const GEMINI_BASE = 'https://generativelanguage.googleapis.com/v1beta/models'
+const GEMINI_BASE = 'https://generativelanguage.googleapis.com'
 const ACCEPTED_FILE_TYPES = '.pdf,.doc,.docx,.png,.jpg,.jpeg,.webp'
 
 const fileToBase64 = (file) => new Promise((resolve, reject) => {
@@ -220,14 +221,15 @@ const AiGenerate = () => {
             let geminiData = null
             let lastError = null
             outer: for (const model of GEMINI_MODELS) {
+                const { name: modelName, version: apiVersion } = model
                 for (let attempt = 0; attempt < 2; attempt++) {
                     if (attempt > 0) {
-                        setGeneratingMsg(`${model} is busy — retrying in 6 s...`)
+                        setGeneratingMsg(`${modelName} is busy — retrying in 6 s...`)
                         await new Promise(r => setTimeout(r, 6000))
                     }
-                    setGeneratingMsg(`Generating with ${model}...`)
+                    setGeneratingMsg(`Generating with ${modelName}...`)
                     const response = await fetch(
-                        `${GEMINI_BASE}/${model}:generateContent?key=${apiKey.trim()}`,
+                        `${GEMINI_BASE}/${apiVersion}/models/${modelName}:generateContent?key=${apiKey.trim()}`,
                         {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
@@ -249,7 +251,7 @@ const AiGenerate = () => {
                         errMsg.toLowerCase().includes('quota') ||
                         errMsg.toLowerCase().includes('no longer available') ||
                         errMsg.toLowerCase().includes('deprecated')
-                    lastError = new Error(`[${model}] ${errMsg}`)
+                    lastError = new Error(`[${modelName}] ${errMsg}`)
                     if (!isTryNext) break outer  // hard error (e.g. bad API key) – stop immediately
                     // overload: try once more, then fall through to next model
                 }
