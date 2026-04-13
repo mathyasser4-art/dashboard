@@ -5,6 +5,18 @@
 .chapter-head-name {
     font-weight: bold;
     margin-bottom: 0.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+}
+
+.chapter-q-count {
+    font-size: 0.85rem;
+    font-weight: 400;
+    color: #888;
+    background-color: #f0f0f0;
+    padding: 0.15rem 0.6rem;
+    border-radius: 20px;
 }
 
 .chapter-icon i {
@@ -21,12 +33,96 @@
     color: rgb(100, 0, 200) !important;
 }
 
+/* ── Shuffle icon ────────────────────────────────────────────────────────── */
+.shuffle-icon {
+    color: rgb(204, 120, 0) !important;
+    cursor: pointer;
+    transition: transform 0.25s ease;
+}
+
+.shuffle-icon:hover {
+    transform: rotate(20deg);
+}
+
+/* ── Send worksheet icon ─────────────────────────────────────────────────── */
+.send-worksheet-icon {
+    color: rgb(0, 150, 80) !important;
+    cursor: pointer;
+}
+
+/* ── Question card ───────────────────────────────────────────────────────── */
 .question {
     background-color: #fff;
     box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.2), 0 3px 8px 0 rgba(0, 0, 0, 0.19);
-    padding: 1.2rem 1rem;
+    padding: 1rem 1rem;
     margin-top: 1rem;
     border-radius: 5px;
+    align-items: flex-start;
+    gap: 0.5rem;
+    transition: box-shadow 0.15s ease, opacity 0.15s ease;
+}
+
+.question-draggable {
+    cursor: default;
+}
+
+.question-dragging {
+    opacity: 0.45;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
+}
+
+.question-drag-over {
+    box-shadow: 0 0 0 2px rgb(56, 56, 238), 0 4px 14px rgba(56, 56, 238, 0.2);
+}
+
+/* ── Left: drag handle + number ──────────────────────────────────────────── */
+.question-left {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.35rem;
+    flex-shrink: 0;
+    padding-top: 0.15rem;
+}
+
+.drag-handle {
+    cursor: grab;
+    color: #bbb;
+    font-size: 1rem;
+    line-height: 1;
+    padding: 0.1rem 0.25rem;
+    border-radius: 4px;
+    transition: color 0.15s ease, background-color 0.15s ease;
+}
+
+.drag-handle:hover {
+    color: #888;
+    background-color: #f0f0f0;
+}
+
+.drag-handle:active {
+    cursor: grabbing;
+}
+
+.question-number {
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: #aaa;
+    min-width: 1.4rem;
+    text-align: center;
+}
+
+/* ── Question body ───────────────────────────────────────────────────────── */
+.question-body {
+    flex: 1;
+    min-width: 0;
+    padding: 0.15rem 0;
+}
+
+.question-preview-body {
+    display: flex;
+    flex-direction: column;
+    gap: 0.45rem;
 }
 
 .question p,
@@ -36,7 +132,87 @@
     margin: 0;
 }
 
-.question i{
+/* ── Abacus grid inline preview ──────────────────────────────────────────── */
+.grid-inline-preview {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.3rem 0.6rem;
+    align-items: center;
+}
+
+.grid-inline-row {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.2rem;
+}
+
+.grid-inline-op {
+    color: rgb(180, 0, 0);
+    font-weight: 700;
+    font-size: 0.95rem;
+    min-width: 0.8rem;
+    text-align: center;
+}
+
+.grid-inline-val {
+    color: rgb(56, 56, 238);
+    font-weight: 600;
+    font-size: 0.95rem;
+}
+
+/* ── Answers row ─────────────────────────────────────────────────────────── */
+.question-answers-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.3rem;
+    align-items: center;
+    margin-top: 0.1rem;
+}
+
+.answers-label {
+    font-size: 0.78rem;
+    color: #888;
+    font-weight: 600;
+    margin-right: 0.15rem;
+}
+
+.answer-badge {
+    display: inline-flex;
+    align-items: center;
+    font-size: 0.8rem;
+    font-weight: 600;
+    padding: 0.18rem 0.55rem;
+    border-radius: 20px;
+    line-height: 1.4;
+    white-space: nowrap;
+}
+
+.answer-correct {
+    background-color: rgb(220, 248, 228);
+    color: rgb(0, 120, 40);
+    border: 1px solid rgb(180, 230, 195);
+}
+
+.answer-wrong {
+    background-color: rgb(255, 235, 235);
+    color: rgb(180, 0, 0);
+    border: 1px solid rgb(240, 200, 200);
+}
+
+.answer-essay {
+    background-color: rgb(235, 240, 255);
+    color: rgb(40, 60, 200);
+    border: 1px solid rgb(200, 210, 245);
+}
+
+.answer-graph {
+    background-color: rgb(240, 235, 255);
+    color: rgb(100, 0, 200);
+    border: 1px solid rgb(210, 195, 245);
+}
+
+/* ── Question actions ────────────────────────────────────────────────────── */
+.question i {
     margin: 0rem 0.3rem;
     font-size: 1.3rem;
     cursor: pointer;
@@ -45,18 +221,23 @@
 .question-actions {
     display: flex;
     align-items: center;
+    flex-shrink: 0;
+    padding-top: 0.1rem;
 }
 
 .move-icon {
     color: rgb(0, 110, 200);
 }
 
+/* ── Popups ──────────────────────────────────────────────────────────────── */
 .chapter-popup {
     position: fixed;
     top: 0;
     bottom: 0;
     right: 0;
     left: 0;
+    z-index: 100;
+    background-color: rgba(0, 0, 0, 0.3);
 }
 
 .chapter-popup div {
@@ -89,6 +270,7 @@
     width: 250px;
 }
 
+/* ── Move / send card ────────────────────────────────────────────────────── */
 .move-question-card {
     width: min(92vw, 460px);
     text-align: left !important;
@@ -138,13 +320,7 @@
     background-color: rgb(0, 108, 210) !important;
 }
 
-/* ── Send whole worksheet icon ──────────────────────────────────────────── */
-.send-worksheet-icon {
-    color: rgb(0, 150, 80) !important;
-    cursor: pointer;
-}
-
-/* ── Worksheet send popup ───────────────────────────────────────────────── */
+/* ── Worksheet send popup extras ─────────────────────────────────────────── */
 .worksheet-popup-header {
     display: flex;
     align-items: center;
