@@ -542,6 +542,9 @@ const Chapter = () => {
                     <Link to={`/aiGenerate/${questionTypeName}/${encodeURIComponent(chapterDetails.chapterName)}/${chapterID}/${questionTypeID}/${unitID}/${subjectID}`} title="Generate questions with AI">
                         <i className="fa fa-magic icon ai-icon" aria-hidden="true"></i>
                     </Link>
+                    <Link to={`/autoGenerate/${questionTypeName}/${encodeURIComponent(chapterDetails.chapterName)}/${chapterID}/${questionTypeID}/${unitID}/${subjectID}`} title="Generate abacus questions automatically (no AI)">
+                        <i className="fa fa-calculator icon auto-gen-icon" aria-hidden="true"></i>
+                    </Link>
                     <i
                         onClick={openSendWorksheetPopup}
                         className="fa fa-paper-plane send-worksheet-icon"

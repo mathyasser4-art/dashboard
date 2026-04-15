@@ -1,0 +1,56 @@
+/* Inherits most styles from AiGenerate.css via shared class names.
+   Only AutoGenerate-specific styles are defined here. */
+
+/* ── Info banner ─────────────────────────────────────────────────────────── */
+.autogen-info-banner {
+    background-color: rgb(236, 253, 245);
+    border: 1px solid rgb(170, 230, 200);
+    border-radius: 8px;
+    padding: 0.7rem 1rem;
+    font-size: 0.92rem;
+    color: rgb(10, 120, 70);
+    font-weight: 600;
+    margin-bottom: 1.5rem;
+}
+
+/* ── Number inputs ───────────────────────────────────────────────────────── */
+.autogen-number-row {
+    display: flex;
+    align-items: center;
+    gap: 0.9rem;
+}
+
+.autogen-number-input {
+    width: 100px !important;
+    text-align: center;
+}
+
+.autogen-number-hint {
+    font-size: 0.85rem;
+    color: #777;
+}
+
+/* ── Summary bar ─────────────────────────────────────────────────────────── */
+.autogen-summary {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.4rem;
+    background-color: rgb(248, 248, 255);
+    border: 1px solid rgb(220, 220, 245);
+    border-radius: 10px;
+    padding: 0.75rem 1rem;
+    margin-bottom: 0.5rem;
+    margin-top: 0.5rem;
+}
+
+.autogen-summary-item {
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: rgb(56, 56, 56);
+}
+
+.autogen-summary-sep {
+    color: #bbb;
+    font-size: 0.9rem;
+}

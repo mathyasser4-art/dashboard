@@ -10,6 +10,7 @@ import Subject from './pages/subject/Subject'
 import School from './pages/school/School'
 import Users from './pages/users/Users'
 import AiGenerate from './pages/aiGenerate/AiGenerate'
+import AutoGenerate from './pages/autoGenerate/AutoGenerate'
 
 function App() {
   useEffect(() => {
@@ -44,6 +45,7 @@ function App() {
         <Route path='/school' element={<School />} />
         <Route path='/users' element={<Users />} />
         <Route path='/aiGenerate/:questionTypeName/:chapterName/:chapterID/:questionTypeID/:unitID/:subjectID' element={<AiGenerate />} />
+        <Route path='/autoGenerate/:questionTypeName/:chapterName/:chapterID/:questionTypeID/:unitID/:subjectID' element={<AutoGenerate />} />
       </Routes>
     </>
   );

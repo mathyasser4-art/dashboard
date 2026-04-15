@@ -33,6 +33,10 @@
     color: rgb(100, 0, 200) !important;
 }
 
+.auto-gen-icon {
+    color: rgb(0, 140, 130) !important;
+}
+
 /* ── Shuffle icon ────────────────────────────────────────────────────────── */
 .shuffle-icon {
     color: rgb(204, 120, 0) !important;
