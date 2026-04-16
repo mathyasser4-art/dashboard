@@ -34,10 +34,14 @@ const splitAnswers = (value) => {
         .filter(Boolean)
 }
 
+const formatImportedQuestion = (value) => {
+    return normalizeValue(value).replace(/\s+/g, '\n')
+}
+
 const parseImportedRows = (rows) => {
     return rows
         .map((row, index) => {
-            const question = normalizeValue(row.question || row.Question || row.QUESTION || row.text || row.Text)
+            const question = formatImportedQuestion(row.question || row.Question || row.QUESTION || row.text || row.Text)
             const mark = normalizeValue(row.mark || row.MARK || row.questionPoints || row.QuestionPoints || row.score || row.Score)
             const type = normalizeQuestionType(row.type || row.Type || row.questionType || row.QuestionType)
             const combinedAnswers = splitAnswers(row.answers || row.Answers || row.answer || row.Answer)
@@ -531,7 +535,7 @@ const AddQuestion = () => {
                                                 </td>
                                                 <td>{item.rowNumber}</td>
                                                 <td>{item.type}</td>
-                                                <td>{item.question}</td>
+                                                <td className="import-table__question-cell">{item.question}</td>
                                                 <td>{item.type === 'MCQ Question' ? item.mcqAnswers.join(' | ') : item.answers.join(' | ')}</td>
                                                 <td>{item.mark}</td>
                                                 <td>{item.isValid ? 'Ready' : 'Missing data'}</td>
