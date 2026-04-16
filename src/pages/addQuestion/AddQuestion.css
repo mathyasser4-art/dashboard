@@ -105,6 +105,15 @@
     font-family: monospace;
     font-weight: 700;
     letter-spacing: 0.04em;
+    text-align: right !important;
+}
+
+.import-table__question-line{
+    display: block;
+}
+
+.hidden-plus{
+    color: transparent;
 }
 
 .add-question label div {

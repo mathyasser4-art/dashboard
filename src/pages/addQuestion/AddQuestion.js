@@ -38,6 +38,14 @@ const formatImportedQuestion = (value) => {
     return normalizeValue(value).replace(/\s+/g, '\n')
 }
 
+const renderImportedQuestion = (question) => {
+    return question.split('\n').map((line, index) => (
+        <span key={`${line}-${index}`} className="import-table__question-line">
+            {line === '+' ? <span className="hidden-plus">+</span> : line}
+        </span>
+    ))
+}
+
 const parseImportedRows = (rows) => {
     return rows
         .map((row, index) => {
@@ -535,7 +543,7 @@ const AddQuestion = () => {
                                                 </td>
                                                 <td>{item.rowNumber}</td>
                                                 <td>{item.type}</td>
-                                                <td className="import-table__question-cell">{item.question}</td>
+                                                <td className="import-table__question-cell">{renderImportedQuestion(item.question)}</td>
                                                 <td>{item.type === 'MCQ Question' ? item.mcqAnswers.join(' | ') : item.answers.join(' | ')}</td>
                                                 <td>{item.mark}</td>
                                                 <td>{item.isValid ? 'Ready' : 'Missing data'}</td>
