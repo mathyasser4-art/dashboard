@@ -102,7 +102,7 @@
 
 .import-table__question-cell{
     white-space: pre-line;
-    font-family: monospace;
+    font-family: "Courier New", Courier, monospace;
     font-weight: 700;
     letter-spacing: 0.04em;
     text-align: right !important;
@@ -110,10 +110,11 @@
 
 .import-table__question-line{
     display: block;
+    font-family: "Courier New", Courier, monospace;
 }
 
 .hidden-plus{
-    color: transparent;
+    color: #ffffff !important;
 }
 
 .add-question label div {
