@@ -191,6 +191,28 @@
     font-weight: 600;
 }
 
+/* ── Level details pills ─────────────────────────────────────────────────── */
+.autogen-level-details {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.45rem;
+    margin-top: 0.6rem;
+}
+
+.autogen-level-pill {
+    font-size: 0.8rem;
+    font-weight: 600;
+    padding: 0.2rem 0.65rem;
+    border-radius: 20px;
+    background-color: rgb(235, 235, 255);
+    color: rgb(60, 60, 160);
+    border: 1px solid rgb(200, 200, 245);
+}
+
+.autogen-pill-direct   { background-color: rgb(235, 255, 240); color: rgb(20, 120, 60);  border-color: rgb(180, 230, 195); }
+.autogen-pill-friends5 { background-color: rgb(255, 248, 225); color: rgb(140, 90, 0);   border-color: rgb(240, 210, 150); }
+.autogen-pill-friends10 { background-color: rgb(255, 238, 238); color: rgb(180, 30, 30);  border-color: rgb(240, 180, 180); }
+
 /* ── Summary bar ─────────────────────────────────────────────────────────── */
 .autogen-summary {
     display: flex;
