@@ -114,7 +114,13 @@
 }
 
 .hidden-plus{
-    color: #ffffff !important;
+    display: inline-block;
+    width: 1ch;
+    color: transparent !important;
+    opacity: 0 !important;
+    text-shadow: none !important;
+    background: transparent !important;
+    overflow: hidden;
 }
 
 .add-question label div {
