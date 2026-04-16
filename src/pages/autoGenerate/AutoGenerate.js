@@ -1,23 +1,10 @@
-// ─────────────────────────────────────────────
-// 🧠 PRO ABACUS TRAINING ENGINE
-// Multi-level | Difficulty curves | True rod logic
-// ─────────────────────────────────────────────
+import React from 'react';
 
-// Each number is represented as array of rods (right → left)
-// Example: 47 → [7,4]
-
-const toDigits = (num, maxDigits) => {
-  const digits = String(num).padStart(maxDigits, '0').split('').map(Number);
-  return digits.reverse(); // rightmost first
-};
+// 🧠 ABACUS ENGINE (inside same file)
 
 const fromDigits = (digits) => {
-  return Number(digits.reverse().join(''));
+  return Number([...digits].reverse().join(''));
 };
-
-// ─────────────────────────────────────────────
-// 🔹 MOVE TYPE (TRUE SOROBAN PER ROD)
-// ─────────────────────────────────────────────
 
 const getMoveType = (digit, val) => {
   const isAdding = val > 0;
@@ -41,10 +28,6 @@ const getMoveType = (digit, val) => {
 
   return 'complex';
 };
-
-// ─────────────────────────────────────────────
-// 🔹 APPLY MOVE WITH CARRY / BORROW
-// ─────────────────────────────────────────────
 
 const applyMove = (digits, val) => {
   let carry = val;
@@ -72,46 +55,13 @@ const applyMove = (digits, val) => {
   return digits;
 };
 
-// ─────────────────────────────────────────────
-// 🔹 DIFFICULTY CONFIG
-// ─────────────────────────────────────────────
-
 const LEVELS = {
-  beginner: {
-    digits: 1,
-    allowed: ['direct'],
-    maxSteps: 10,
-    subtraction: false
-  },
-  easy: {
-    digits: 1,
-    allowed: ['direct', 'friends5'],
-    maxSteps: 12,
-    subtraction: true
-  },
-  medium: {
-    digits: 2,
-    allowed: ['direct', 'friends5', 'friends10'],
-    maxSteps: 15,
-    subtraction: true
-  },
-  hard: {
-    digits: 2,
-    allowed: ['direct', 'friends5', 'friends10', 'complex'],
-    maxSteps: 20,
-    subtraction: true
-  },
-  expert: {
-    digits: 3,
-    allowed: ['direct', 'friends5', 'friends10', 'complex'],
-    maxSteps: 25,
-    subtraction: true
-  }
+  beginner: { digits: 1, allowed: ['direct'], maxSteps: 10, subtraction: false },
+  easy: { digits: 1, allowed: ['direct', 'friends5'], maxSteps: 12, subtraction: true },
+  medium: { digits: 2, allowed: ['direct', 'friends5', 'friends10'], maxSteps: 15, subtraction: true },
+  hard: { digits: 2, allowed: ['direct', 'friends5', 'friends10', 'complex'], maxSteps: 20, subtraction: true },
+  expert: { digits: 3, allowed: ['direct', 'friends5', 'friends10', 'complex'], maxSteps: 25, subtraction: true }
 };
-
-// ─────────────────────────────────────────────
-// 🔹 GENERATE SINGLE QUESTION
-// ─────────────────────────────────────────────
 
 const generateQuestion = (levelKey) => {
   const config = LEVELS[levelKey];
@@ -136,7 +86,6 @@ const generateQuestion = (levelKey) => {
 
     if (!config.allowed.includes(moveType)) continue;
 
-    // Bounds check
     const result = fromDigits([...newDigits]);
     const max = Math.pow(10, config.digits) - 1;
 
@@ -157,66 +106,44 @@ const generateQuestion = (levelKey) => {
   };
 };
 
-// ─────────────────────────────────────────────
-// 🔹 BATCH GENERATOR
-// ─────────────────────────────────────────────
-
-export const generateTrainingSet = ({
-  level = 'beginner',
-  count = 10,
-  questionType = 'MCQ'
-}) => {
+const generateTrainingSet = ({ level = 'medium', count = 5 }) => {
   const questions = [];
 
   for (let i = 0; i < count; i++) {
-    const q = generateQuestion(level);
-
-    const base = {
-      steps: q.steps,
-      question: JSON.stringify(q.steps)
-    };
-
-    if (questionType === 'MCQ') {
-      const correct = q.answer;
-      const wrongs = new Set();
-
-      while (wrongs.size < 3) {
-        const offset = Math.floor(Math.random() * 10) + 1;
-        const val = Math.random() > 0.5 ? correct + offset : correct - offset;
-        if (val >= 0 && val !== correct) wrongs.add(val);
-      }
-
-      base.correctAnswer = String(correct);
-      base.wrongAnswer = [...wrongs].map(String);
-    } else {
-      base.answer = [String(q.answer)];
-    }
-
-    questions.push(base);
+    questions.push(generateQuestion(level));
   }
 
   return questions;
 };
 
-// ─────────────────────────────────────────────
-// 🔹 OPTIONAL: PERFORMANCE TRACKING HOOK
-// ─────────────────────────────────────────────
+// ✅ THIS FIXES YOUR ERROR (default export component)
+const AutoGenerate = () => {
+  const questions = generateTrainingSet({
+    level: 'medium',
+    count: 5
+  });
 
-export const evaluatePerformance = (results) => {
-  const total = results.length;
-  const correct = results.filter(r => r.correct).length;
+  return (
+    <div style={{ padding: 20 }}>
+      <h1>Abacus Generator</h1>
 
-  const accuracy = (correct / total) * 100;
+      {questions.map((q, i) => (
+        <div key={i} style={{ marginBottom: 20 }}>
+          <strong>Question {i + 1}</strong>
 
-  let nextLevel = 'beginner';
+          <div>
+            {q.steps.map((step, idx) => (
+              <div key={idx}>
+                {step.op} {step.val} ({step.moveType})
+              </div>
+            ))}
+          </div>
 
-  if (accuracy > 90) nextLevel = 'expert';
-  else if (accuracy > 75) nextLevel = 'hard';
-  else if (accuracy > 60) nextLevel = 'medium';
-  else if (accuracy > 40) nextLevel = 'easy';
-
-  return {
-    accuracy,
-    nextLevel
-  };
+          <div><b>Answer:</b> {q.answer}</div>
+        </div>
+      ))}
+    </div>
+  );
 };
+
+export default AutoGenerate;
