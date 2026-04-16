@@ -191,6 +191,27 @@
     font-weight: 600;
 }
 
+/* ── Question structure row ──────────────────────────────────────────────── */
+.autogen-structure-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.5rem;
+}
+
+.autogen-structure-field {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    flex-wrap: wrap;
+}
+
+.autogen-structure-label {
+    font-size: 0.9rem;
+    color: rgb(56, 56, 56);
+    font-weight: 600;
+    white-space: nowrap;
+}
+
 /* ── Level details pills ─────────────────────────────────────────────────── */
 .autogen-level-details {
     display: flex;

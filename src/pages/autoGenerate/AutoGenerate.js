@@ -95,31 +95,36 @@ const LEVELS = {
     },
 }
 
-const generateQuestion = (levelKey) => {
-    const config = LEVELS[levelKey]
-    const maxVal  = Math.pow(10, config.digits) - 1
+/**
+ * numDigits and numRows can be passed directly to override the level defaults.
+ */
+const generateQuestion = (levelKey, numDigits, numRows) => {
+    const config  = LEVELS[levelKey]
+    const digits  = numDigits || config.digits
+    const steps   = numRows   || config.steps
+    const maxVal  = Math.pow(10, digits) - 1
     const rows    = []
-    let digits    = new Array(config.digits).fill(0)
+    let digitArr  = new Array(digits).fill(0)
     let attempts  = 0
 
-    while (rows.length < config.steps && attempts < 3000) {
+    while (rows.length < steps && attempts < 3000) {
         attempts++
         let val = Math.floor(Math.random() * 9) + 1
         if (config.subtraction && rows.length > 0 && Math.random() > 0.6) val = -val
         if (rows.length === 0 && val < 0) continue
 
-        const newDigits = applyMove([...digits], val)
+        const newDigits = applyMove([...digitArr], val)
         const result    = fromDigits([...newDigits])
         if (result < 1 || result > maxVal) continue
 
-        const moveType = getMoveType(digits[0], val)
+        const moveType = getMoveType(digitArr[0], val)
         if (!config.allowed.includes(moveType)) continue
 
-        digits = newDigits
+        digitArr = newDigits
         rows.push({ op: val > 0 ? '+' : '-', val: Math.abs(val), moveType })
     }
 
-    return { rows, answer: fromDigits(digits) }
+    return { rows, answer: fromDigits(digitArr) }
 }
 
 const generateWrongAnswers = (correct) => {
@@ -141,10 +146,10 @@ const generateWrongAnswers = (correct) => {
     return [...wrongs]
 }
 
-const generateBatch = ({ count, levelKey, questionType, points }) => {
+const generateBatch = ({ count, levelKey, numDigits, numRows, questionType, points }) => {
     const questions = []
     for (let i = 0; i < count; i++) {
-        const { rows, answer } = generateQuestion(levelKey)
+        const { rows, answer } = generateQuestion(levelKey, numDigits, numRows)
         // Strip moveType before sending to API — it only needs op + val
         const gridRows = rows.map(({ op, val }) => ({ op, val }))
         const q = {
@@ -171,6 +176,8 @@ const AutoGenerate = () => {
 
     const [count,        setCount]        = useState(10)
     const [levelKey,     setLevelKey]     = useState('easy')
+    const [numDigits,    setNumDigits]    = useState(LEVELS['easy'].digits)
+    const [numRows,      setNumRows]      = useState(LEVELS['easy'].steps)
     const [questionType, setQuestionType] = useState('Essay')
     const [points,       setPoints]       = useState(2)
 
@@ -183,9 +190,18 @@ const AutoGenerate = () => {
         ? Math.round((progress.current / progress.total) * 100)
         : 0
 
+    // When level changes, reset digits and rows to the level's defaults
+    const handleLevelChange = (key) => {
+        setLevelKey(key)
+        setNumDigits(LEVELS[key].digits)
+        setNumRows(LEVELS[key].steps)
+    }
+
     const validate = () => {
-        if (count < 1 || count > 50) { setErrorMessage('Number of questions must be between 1 and 50.'); return false }
-        if (points < 1 || points > 5) { setErrorMessage('Points must be between 1 and 5.'); return false }
+        if (count < 1 || count > 50)    { setErrorMessage('Number of questions must be between 1 and 50.'); return false }
+        if (numDigits < 1 || numDigits > 4) { setErrorMessage('Number of digits must be between 1 and 4.'); return false }
+        if (numRows < 2 || numRows > 30)  { setErrorMessage('Number of rows must be between 2 and 30.'); return false }
+        if (points < 1 || points > 5)   { setErrorMessage('Points must be between 1 and 5.'); return false }
         return true
     }
 
@@ -193,7 +209,7 @@ const AutoGenerate = () => {
         if (!validate()) return
         setErrorMessage('')
 
-        const questions = generateBatch({ count, levelKey, questionType, points })
+        const questions = generateBatch({ count, levelKey, numDigits, numRows, questionType, points })
         setStatus('saving')
         setProgress({ current: 0, total: questions.length })
 
@@ -313,7 +329,7 @@ const AutoGenerate = () => {
                                     name="level"
                                     value={key}
                                     checked={levelKey === key}
-                                    onChange={() => setLevelKey(key)}
+                                    onChange={() => handleLevelChange(key)}
                                 />
                                 {cfg.label}
                             </label>
@@ -321,16 +337,43 @@ const AutoGenerate = () => {
                     </div>
                     <p className="autogen-level-desc">{selectedLevel.desc}</p>
 
-                    {/* Level details pills */}
+                    {/* Level technique pills */}
                     <div className="autogen-level-details">
-                        <span className="autogen-level-pill">🔢 {selectedLevel.digits}-digit</span>
-                        <span className="autogen-level-pill">📏 {selectedLevel.steps} rows</span>
                         <span className="autogen-level-pill">{selectedLevel.subtraction ? '+ and −' : '+ only'}</span>
                         {selectedLevel.allowed.map(a => (
                             <span key={a} className={`autogen-level-pill autogen-pill-${a}`}>
                                 {a === 'direct' ? 'Direct' : a === 'friends5' ? 'Friends of 5' : 'Friends of 10'}
                             </span>
                         ))}
+                    </div>
+                </div>
+
+                {/* ── Number of Digits + Rows (manual overrides) */}
+                <div className="ai-field">
+                    <label className="ai-label">Question Structure</label>
+                    <div className="autogen-structure-row">
+                        <div className="autogen-structure-field">
+                            <span className="autogen-structure-label">Digits per number</span>
+                            <input
+                                type="number"
+                                className="ai-input autogen-number-input"
+                                min={1} max={4}
+                                value={numDigits}
+                                onChange={e => setNumDigits(Number(e.target.value))}
+                            />
+                            <span className="autogen-number-hint">1 = up to 9, 2 = up to 99…</span>
+                        </div>
+                        <div className="autogen-structure-field">
+                            <span className="autogen-structure-label">Rows per question</span>
+                            <input
+                                type="number"
+                                className="ai-input autogen-number-input"
+                                min={2} max={30}
+                                value={numRows}
+                                onChange={e => setNumRows(Number(e.target.value))}
+                            />
+                            <span className="autogen-number-hint">2–30 rows</span>
+                        </div>
                     </div>
                 </div>
 
@@ -370,7 +413,9 @@ const AutoGenerate = () => {
                     <span className="autogen-summary-sep">·</span>
                     <span className="autogen-summary-item">{selectedLevel.label}</span>
                     <span className="autogen-summary-sep">·</span>
-                    <span className="autogen-summary-item">{selectedLevel.steps} rows each</span>
+                    <span className="autogen-summary-item">{numDigits}-digit</span>
+                    <span className="autogen-summary-sep">·</span>
+                    <span className="autogen-summary-item">{numRows} rows each</span>
                     <span className="autogen-summary-sep">·</span>
                     <span className="autogen-summary-item">{questionType}</span>
                     <span className="autogen-summary-sep">·</span>
