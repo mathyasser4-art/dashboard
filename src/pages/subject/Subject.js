@@ -7,6 +7,7 @@ import updateSystem from '../../api/updateSystem.api'
 import deleteSystem from '../../api/deleteSystem.api'
 import updateSubject from '../../api/updateSubject.api';
 import deleteSubject from '../../api/deleteSubject.api';
+import reorderSubjects from '../../api/reorderSubjects.api';
 import '../../reusable.css'
 import './Subject.css'
 
@@ -153,6 +154,38 @@ function Subject() {
     }
     // delete system func end
 
+    // reorder subject func start
+    const moveSubjectUp = (systemIndex, subjectIndex) => {
+        if (subjectIndex === 0) return;
+        const newAllSystem = [...allSystem];
+        const system = newAllSystem[systemIndex];
+        const subjects = [...system.subjects];
+        const temp = subjects[subjectIndex];
+        subjects[subjectIndex] = subjects[subjectIndex - 1];
+        subjects[subjectIndex - 1] = temp;
+        system.subjects = subjects;
+        setAllSystem(newAllSystem);
+        
+        const subjectIDs = subjects.map(s => s._id);
+        reorderSubjects(system._id, subjectIDs, setAllSystem);
+    }
+
+    const moveSubjectDown = (systemIndex, subjectIndex) => {
+        const newAllSystem = [...allSystem];
+        const system = newAllSystem[systemIndex];
+        const subjects = [...system.subjects];
+        if (subjectIndex === subjects.length - 1) return;
+        const temp = subjects[subjectIndex];
+        subjects[subjectIndex] = subjects[subjectIndex + 1];
+        subjects[subjectIndex + 1] = temp;
+        system.subjects = subjects;
+        setAllSystem(newAllSystem);
+        
+        const subjectIDs = subjects.map(s => s._id);
+        reorderSubjects(system._id, subjectIDs, setAllSystem);
+    }
+    // reorder subject func end
+
     if (loading) return (<div className='loading-container'><div className='d-flex justify-content-center'><span className="page-loader"></span></div></div>)
 
     return (
@@ -162,7 +195,7 @@ function Subject() {
                 <p onClick={openAddSystem}>Add New System</p>
             </div>
             <div className='d-flex flex-wrap'>
-                {allSystem?.map(item => {
+                {allSystem?.map((item, systemIndex) => {
                     return (
                         <div className='system-cover' key={item._id}>
                             <div className='d-flex justify-content-space-between align-items-center'>
@@ -173,11 +206,13 @@ function Subject() {
                                     <i onClick={() => openDeleteSysPopup(item)} className="fa fa-trash" style={{color: '#ff4d4f', marginLeft: '10px'}} aria-hidden="true"></i>
                                 </div>
                             </div>
-                            {item.subjects?.map(subItem => {
+                            {item.subjects?.map((subItem, subjectIndex) => {
                                 return (
                                     <div className='subject-cover d-flex justify-content-space-between align-items-center' key={subItem._id}>
                                         <Link to={`/unit/${questionTypeName}/${questionTypeID}/${subItem._id}`}><p className='subject-name'>{subItem.subjectName}</p></Link>
                                         <div>
+                                            {subjectIndex > 0 && <i onClick={() => moveSubjectUp(systemIndex, subjectIndex)} className="fa fa-arrow-up" style={{marginRight: '10px'}} aria-hidden="true"></i>}
+                                            {subjectIndex < item.subjects.length - 1 && <i onClick={() => moveSubjectDown(systemIndex, subjectIndex)} className="fa fa-arrow-down" style={{marginRight: '10px'}} aria-hidden="true"></i>}
                                             <i onClick={() => openUpdateSubPopup(subItem.subjectName, subItem._id)} className="fa fa-pencil" aria-hidden="true"></i>
                                             <i onClick={() => openDeleteSubPopup(subItem._id)} className="fa fa-trash" style={{color: '#ff4d4f', marginLeft: '10px'}} aria-hidden="true"></i>
                                         </div>
