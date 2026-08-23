@@ -8,6 +8,7 @@ import './AiGenerate.css'
 // ── Gemini config ─────────────────────────────────────────────────────────────
 const GEMINI_MODELS = [
     { name: 'gemini-2.5-flash', version: 'v1beta' },
+    { name: 'gemini-2.0-flash', version: 'v1beta' },
     { name: 'gemini-1.5-flash', version: 'v1' },
 ]
 const GEMINI_BASE = 'https://generativelanguage.googleapis.com'
@@ -53,29 +54,29 @@ const buildPrompt = (questionType, topic, chapterName, skillLevel, attachmentCon
   "questionPoints": 2
 }`
     const shape = questionType === 'MCQ' ? mcqShape : essayShape
-    const selectedSkillLevel = skillLevel.trim() || 'basic (direct)'
+    const selectedSkillLevel = skillLevel?.trim() || 'Standard'
 
-    return `You are an expert abacus worksheet creator and question extractor.
-Generate ${typeLabel} abacus questions for the chapter "${chapterName}".
+    return `You are an expert educational question creator and worksheet extractor.
+Generate or extract ${typeLabel} questions for the chapter/subject "${chapterName}".
 
-ABACUS REQUIREMENTS:
-- Topic / extra instructions: "${topic}"
-- Abacus skill / level: ${selectedSkillLevel}
-- Determine the appropriate number of questions, rows per question, digits, and operations based on the topic and attached file.
+TOPIC & INSTRUCTIONS:
+- Topic / extra instructions: "${topic || 'Questions matching the chapter topic'}"
+- Difficulty / Skill Level: ${selectedSkillLevel}
 
-FILE HANDLING RULES:
-- If an attached file contains existing questions, read them carefully and convert them into dashboard-ready questions.
-- Preserve the meaning of the source questions from the file, but normalize wording if needed.
-- If the file includes answer choices or answers, use them to produce the correct dashboard JSON.
-- If no file is attached, generate questions from the topic instructions only.
+FILE HANDLING & EXTRACTION RULES:
+- If an attached file contains questions or exercises, read the entire document carefully and extract/convert them into dashboard-ready questions.
+- Preserve the exact meaning, wording, and numerical values of the questions from the file.
+- If the file includes answer keys or choices, use them to produce the correct answer and wrong answers.
+- If the file contains questions without answers, solve them accurately and provide the correct answer and plausible wrong options.
+- If no file is attached, generate high-quality educational questions based on the topic and chapter instructions.
+- This applies to ANY subject or topic (Math, Abacus, Science, Languages, History, General Knowledge, etc.).
 
-STRICT RULES:
-- Return ONLY a valid JSON object. No markdown, no code blocks, no explanation.
-- Every generated question must be specifically for abacus practice.
+STRICT FORMAT RULES:
+- Return ONLY a valid JSON object matching the requested schema. No markdown wrapping, no conversational text, no explanations.
 - Use plain text only.
-- For MCQ: provide exactly 3 wrong answers and 1 correct answer.
-- For Essay: provide 1-3 accepted answer variations.
-- questionPoints should be between 1 and 5.
+- For MCQ: provide exactly 3 wrong answers (array of strings) and 1 correct answer (string).
+- For Essay: provide 1-3 accepted answer variations in "answer".
+- "questionPoints" should be an integer between 1 and 5 (default 2).
 
 ATTACHMENT CONTEXT:
 ${attachmentContext || 'No attachment was provided.'}
@@ -88,10 +89,20 @@ Return this exact JSON structure:
 }`
 }
 
-const stripMarkdown = (text) => text
-    .replace(/```json\s*/gi, '')
-    .replace(/```\s*/gi, '')
-    .trim()
+const extractJson = (text) => {
+    let clean = text.replace(/```json\s*/gi, '').replace(/```\s*/gi, '').trim()
+    try {
+        return JSON.parse(clean)
+    } catch (e) {
+        const firstBrace = clean.indexOf('{')
+        const lastBrace = clean.lastIndexOf('}')
+        if (firstBrace !== -1 && lastBrace !== -1 && lastBrace > firstBrace) {
+            const jsonSubstring = clean.substring(firstBrace, lastBrace + 1)
+            return JSON.parse(jsonSubstring)
+        }
+        throw e
+    }
+}
 
 const buildGeminiParts = async ({ prompt, attachmentFile }) => {
     const parts = [{ text: prompt }]
@@ -243,7 +254,7 @@ const AiGenerate = () => {
     const [grokKey, setGrokKey] = useState('')
     const [topic, setTopic] = useState('')
     const [questionType, setQuestionType] = useState('MCQ')
-    const [skillLevel, setSkillLevel] = useState('Basic (direct)')
+    const [skillLevel, setSkillLevel] = useState('Standard / Auto-detect')
     const [attachmentFile, setAttachmentFile] = useState(null)
     const [status, setStatus] = useState('idle') // idle | generating | saving | done | error
     const [generatingMsg, setGeneratingMsg] = useState('')
@@ -276,7 +287,6 @@ const AiGenerate = () => {
     const validate = () => {
         if (!apiKey.trim()) { setErrorMessage('API key is required'); return false }
         if (!topic.trim() && !attachmentFile) { setErrorMessage('Add a topic or attach a file'); return false }
-        if (!skillLevel.trim()) { setErrorMessage('Skill level is required'); return false }
         if (attachmentFile && attachmentFile.size > 20 * 1024 * 1024) {
             setErrorMessage('Attached files must be smaller than 20 MB')
             return false
@@ -359,8 +369,7 @@ const AiGenerate = () => {
                 rawText = await callGrok({ prompt, attachmentFile, apiKey: apiKey.trim(), onStatus: setGeneratingMsg })
             }
 
-            const cleanedText = stripMarkdown(rawText)
-            const parsed = JSON.parse(cleanedText)
+            const parsed = extractJson(rawText)
             questions = parsed.questions || []
 
             if (!Array.isArray(questions) || questions.length === 0) {
@@ -542,13 +551,13 @@ const AiGenerate = () => {
                     <label className="ai-label">Topic / Description</label>
                     <textarea
                         className="ai-textarea"
-                        placeholder="Describe the abacus worksheet you want and add any extra notes for the AI..."
+                        placeholder="Describe the worksheet/questions you want (e.g. topic, grade level, question count, specific requirements)..."
                         value={topic}
                         onChange={e => setTopic(e.target.value)}
                         rows={3}
                     />
                     <p className="ai-field-help">
-                        You can write instructions here, attach a file below, or use both together.
+                        You can write topic instructions, attach any worksheet/quiz document (PDF, Word, Image), or use both together.
                     </p>
                 </div>
 
@@ -568,11 +577,11 @@ const AiGenerate = () => {
                             onChange={handleFileChange}
                         />
                         <span className="ai-upload-title">
-                            {provider === 'gemini' ? 'Upload PDF, Word, or image' : 'Upload image'}
+                            {provider === 'gemini' ? 'Upload PDF, Word, or image worksheet' : 'Upload image worksheet'}
                         </span>
                         <span className="ai-upload-subtitle">
                             {provider === 'gemini'
-                                ? 'Supported: PDF, DOC, DOCX, PNG, JPG, JPEG, WEBP'
+                                ? 'Upload any worksheet/exam in PDF, DOC, DOCX, PNG, JPG, or WEBP'
                                 : provider === 'grok'
                                     ? 'Supported: PNG, JPG, JPEG, WEBP — PDFs not supported by Grok'
                                     : 'Supported: PNG, JPG, JPEG, WEBP — PDFs not supported by OpenAI'}
@@ -619,19 +628,23 @@ const AiGenerate = () => {
                     </div>
                 </div>
 
-                {/* ── Skill level ───────────────────────────────────────────── */}
+                {/* ── Difficulty / Skill level ──────────────────────────────── */}
                 <div className="ai-field">
-                    <label className="ai-label">Abacus Skill / Level</label>
+                    <label className="ai-label">Difficulty / Skill Level</label>
                     <select
                         className="ai-input"
                         value={skillLevel}
                         onChange={e => setSkillLevel(e.target.value)}
                     >
-                        <option value="Basic (direct)">Basic (direct)</option>
-                        <option value="Friends of 5">Friends of 5</option>
-                        <option value="Friends of 10">Friends of 10</option>
-                        <option value="Friends of 5 and 10">Friends of 5 and 10</option>
-                        <option value="Other abacus skills">Other abacus skills</option>
+                        <option value="Standard / Auto-detect">Standard / Auto-detect</option>
+                        <option value="Beginner / Easy">Beginner / Easy</option>
+                        <option value="Intermediate / Medium">Intermediate / Medium</option>
+                        <option value="Advanced / Hard">Advanced / Hard</option>
+                        <option value="Abacus: Basic (direct)">Abacus: Basic (direct)</option>
+                        <option value="Abacus: Friends of 5">Abacus: Friends of 5</option>
+                        <option value="Abacus: Friends of 10">Abacus: Friends of 10</option>
+                        <option value="Abacus: Friends of 5 and 10">Abacus: Friends of 5 and 10</option>
+                        <option value="Other / Custom">Other / Custom</option>
                     </select>
                 </div>
 
