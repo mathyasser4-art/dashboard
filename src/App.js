@@ -9,6 +9,8 @@ import UpdateQuestion from './pages/updateQuestion/UpdateQuestion'
 import Subject from './pages/subject/Subject'
 import School from './pages/school/School'
 import Users from './pages/users/Users'
+import Organization from './pages/organization/Organization'
+import OrganizationDetails from './pages/organization/OrganizationDetails'
 import AiGenerate from './pages/aiGenerate/AiGenerate'
 import AutoGenerate from './pages/autoGenerate/AutoGenerate'
 
@@ -43,6 +45,8 @@ function App() {
         <Route path='/addQuestion/:questionTypeName/:chapterName/:chapterID/:questionTypeID/:unitID/:subjectID/:questionNum' element={<AddQuestion />} />
         <Route path='/updateQuestion/:questionTypeName/:questionID/:questionTypeID/:unitID/:subjectID' element={<UpdateQuestion />} />
         <Route path='/school' element={<School />} />
+        <Route path='/organization' element={<Organization />} />
+        <Route path='/organization/:orgID' element={<OrganizationDetails />} />
         <Route path='/users' element={<Users />} />
         <Route path='/aiGenerate/:questionTypeName/:chapterName/:chapterID/:questionTypeID/:unitID/:subjectID' element={<AiGenerate />} />
         <Route path='/autoGenerate/:questionTypeName/:chapterName/:chapterID/:questionTypeID/:unitID/:subjectID' element={<AutoGenerate />} />

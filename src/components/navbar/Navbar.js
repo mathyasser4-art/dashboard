@@ -11,8 +11,9 @@ const Navbar = () => {
             <div className='nav-container d-flex justify-content-space-between align-items-center'>
                 <Link to={'/questionType'}><img src={logo} alt="" /></Link>
                 <div className='d-flex align-items-center school'>
-                    <Link to={'/users'}><i class="fa fa-user" aria-hidden="true"></i></Link>
-                    <Link to={'/school'}><i class="fa fa-graduation-cap" aria-hidden="true"></i></Link>
+                    <Link to={'/users'} title="Users"><i className="fa fa-user" aria-hidden="true"></i></Link>
+                    <Link to={'/organization'} title="Organizations &amp; Multi-School Groups"><i className="fa fa-sitemap" aria-hidden="true"></i></Link>
+                    <Link to={'/school'} title="Schools"><i className="fa fa-graduation-cap" aria-hidden="true"></i></Link>
                 </div>
             </div>
         </nav>
