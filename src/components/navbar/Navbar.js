@@ -13,7 +13,7 @@ const Navbar = () => {
                 <div className='d-flex align-items-center school'>
                     <Link to={'/users'} title="Users"><i className="fa fa-user" aria-hidden="true"></i></Link>
                     <Link to={'/organization'} title="Organizations &amp; Multi-School Groups"><i className="fa fa-sitemap" aria-hidden="true"></i></Link>
-                    <Link to={'/school'} title="Schools"><i className="fa fa-graduation-cap" aria-hidden="true"></i></Link>
+                    <Link to={'/school'} title="Grades"><i className="fa fa-graduation-cap" aria-hidden="true"></i></Link>
                 </div>
             </div>
         </nav>

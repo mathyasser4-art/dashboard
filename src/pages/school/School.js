@@ -116,7 +116,7 @@ function School() {
             <div className='new-school'>
                 <div className='d-flex align-items-center'>
                     <span className='add-icon'>+</span>
-                    <p onClick={openAddPopup}>Add New School</p>
+                    <p onClick={openAddPopup}>Add New Grade</p>
                 </div>
             </div>
             {allSchools?.map(item => {
@@ -132,44 +132,44 @@ function School() {
                     </div>
                 )
             })}
-            {/* add school popup start */}
+            {/* add grade popup start */}
             <div className="add-school-popup school-popup d-none justify-content-center align-items-center">
                 <div>
-                    <p className='text-color'>Add new school account</p>
-                    <input type="text" placeholder='Enter the school name' value={schoolName} onChange={e => setSchoolName(e.target.value)} />
-                    <input type="email" placeholder='Enter the school email' value={schoolEmail} onChange={e => setSchoolEmail(e.target.value)} />
-                    <input type="password" placeholder='Enter the school password' value={schoolPassword} onChange={e => setSchoolPassword(e.target.value)} />
+                    <p className='text-color'>Add new grade account</p>
+                    <input type="text" placeholder='Enter the grade name (e.g. Grade 1, Grade 2, KG1)' value={schoolName} onChange={e => setSchoolName(e.target.value)} />
+                    <input type="email" placeholder='Enter the grade email' value={schoolEmail} onChange={e => setSchoolEmail(e.target.value)} />
+                    <input type="password" placeholder='Enter the grade password' value={schoolPassword} onChange={e => setSchoolPassword(e.target.value)} />
                     {(serverOperationError) ? <p className='text-error'>{serverOperationError}</p> : ''}
                     <button className='button' onClick={addNewSchool}>{(serverOperationLoading) ? <span className="button-loader"></span> : 'Add'}</button>
                     <button className='button' onClick={closeAddPopup}>Cancel</button>
                 </div>
             </div>
-            {/* add school popup end */}
+            {/* add grade popup end */}
 
-            {/* update school popup start */}
+            {/* update grade popup start */}
             <div className="update-school-popup school-popup d-none justify-content-center align-items-center">
                 <div>
-                    <p className='text-color'>Update school account</p>
-                    <input type="text" placeholder='Enter the school name' value={schoolName} onChange={e => setSchoolName(e.target.value)} />
-                    <input type="email" placeholder='Enter the school email' value={schoolEmail} onChange={e => setSchoolEmail(e.target.value)} />
+                    <p className='text-color'>Update grade account</p>
+                    <input type="text" placeholder='Enter the grade name' value={schoolName} onChange={e => setSchoolName(e.target.value)} />
+                    <input type="email" placeholder='Enter the grade email' value={schoolEmail} onChange={e => setSchoolEmail(e.target.value)} />
                     <input type="password" placeholder='•••••••••••••••••••' value={schoolPassword} onChange={e => setSchoolPassword(e.target.value)} />
                     {(serverOperationError) ? <p className='text-error'>{serverOperationError}</p> : ''}
                     <button className='button' onClick={handleUpdateSchool}>{(serverOperationLoading) ? <span className="button-loader"></span> : 'Update'}</button>
                     <button className='button' onClick={closeUpdatePopup}>Cancel</button>
                 </div>
             </div>
-            {/* update school popup end */}
+            {/* update grade popup end */}
 
-            {/* delete school popup start */}
+            {/* delete grade popup start */}
             <div className="delete-school-popup school-popup d-none justify-content-center align-items-center">
                 <div>
-                    <p className='text-color'>Are you sure you want to delete this school?</p>
+                    <p className='text-color'>Are you sure you want to delete this grade?</p>
                     {(serverOperationError) ? <p className='text-error'>{serverOperationError}</p> : ''}
                     <button className='button' onClick={handleDeleteSchool}>{(serverOperationLoading) ? <span className="button-loader"></span> : 'Delete'}</button>
                     <button className='button' onClick={closeDeletePopup}>Cancel</button>
                 </div>
             </div>
-            {/* delete school popup end */}
+            {/* delete grade popup end */}
         </div>
     )
 }

@@ -136,7 +136,7 @@ function Organization() {
             <div className='org-header-banner d-flex justify-content-space-between align-items-center'>
                 <div>
                     <h2>Educational Groups &amp; Organizations</h2>
-                    <p className='org-subtitle'>Manage multi-school groups and view consolidated cross-school analytics</p>
+                    <p className='org-subtitle'>Manage multi-grade organizations and view consolidated cross-grade analytics</p>
                 </div>
                 <div className='new-org-btn'>
                     <div className='d-flex align-items-center' onClick={openAddPopup}>
@@ -150,7 +150,7 @@ function Organization() {
                 <div className='org-empty-state'>
                     <i className="fa fa-sitemap org-empty-icon" aria-hidden="true"></i>
                     <h3>No Organizations Yet</h3>
-                    <p>Create an organization to group multiple schools together and monitor them in a single dashboard.</p>
+                    <p>Create an organization to group multiple grades together and monitor them in a single dashboard.</p>
                     <button className='button' onClick={openAddPopup}>+ Add Organization</button>
                 </div>
             )}
@@ -169,13 +169,13 @@ function Organization() {
                                 </Link>
                                 <div className='org-meta d-flex align-items-center'>
                                     <span className='org-badge'>
-                                        <i className="fa fa-graduation-cap" aria-hidden="true"></i> {schoolCount} {schoolCount === 1 ? 'School' : 'Schools'}
+                                        <i className="fa fa-graduation-cap" aria-hidden="true"></i> {schoolCount} {schoolCount === 1 ? 'Grade' : 'Grades'}
                                     </span>
                                     <span className='org-email'>{item.email}</span>
                                 </div>
                             </div>
                             <div className='org-actions d-flex align-items-center'>
-                                <Link to={`/organization/${item._id}`} className='org-view-btn' title="Open Multi-School Dashboard">
+                                <Link to={`/organization/${item._id}`} className='org-view-btn' title="Open Multi-Grade Dashboard">
                                     <i className="fa fa-dashboard" aria-hidden="true"></i> Dashboard
                                 </Link>
                                 {item.disable ? (
@@ -197,7 +197,7 @@ function Organization() {
                     <p className='text-color modal-title'>Add New Organization</p>
                     <input
                         type="text"
-                        placeholder='Enter Organization / Group Name (e.g. Al-Amal Educational Group)'
+                        placeholder='Enter Organization Name (e.g. Al-Amal School / Main Academy)'
                         value={orgName}
                         onChange={e => setOrgName(e.target.value)}
                     />
@@ -216,7 +216,7 @@ function Organization() {
 
                     <div className='school-select-section'>
                         <label className='school-select-label'>
-                            <i className="fa fa-graduation-cap" aria-hidden="true"></i> Assign Schools to this Organization:
+                            <i className="fa fa-graduation-cap" aria-hidden="true"></i> Assign Grades to this Organization:
                         </label>
                         <div className='schools-checkbox-list'>
                             {allSchools.map(school => (
@@ -230,7 +230,7 @@ function Organization() {
                                 </label>
                             ))}
                             {allSchools.length === 0 && (
-                                <p className='text-muted small'>No schools created yet. You can assign schools later.</p>
+                                <p className='text-muted small'>No grades created yet. You can assign grades later.</p>
                             )}
                         </div>
                     </div>
@@ -270,7 +270,7 @@ function Organization() {
 
                     <div className='school-select-section'>
                         <label className='school-select-label'>
-                            <i className="fa fa-graduation-cap" aria-hidden="true"></i> Assigned Schools:
+                            <i className="fa fa-graduation-cap" aria-hidden="true"></i> Assigned Grades:
                         </label>
                         <div className='schools-checkbox-list'>
                             {allSchools.map(school => (
@@ -301,7 +301,7 @@ function Organization() {
                 <div className='org-modal-box delete-box'>
                     <p className='text-color modal-title'>Delete Organization</p>
                     <p className='delete-warning'>
-                        Are you sure you want to delete this organization? The schools will remain intact and will simply be detached from this group.
+                        Are you sure you want to delete this organization? The grades will remain intact and will simply be detached from this group.
                     </p>
                     {serverOperationError && <p className='text-error'>{serverOperationError}</p>}
                     <div className='modal-btn-row'>

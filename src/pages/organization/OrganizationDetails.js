@@ -118,13 +118,13 @@ function OrganizationDetails() {
                     <i className="fa fa-arrow-left" aria-hidden="true"></i> Back to Organizations
                 </Link>
                 <div className='school-filter-select-wrapper'>
-                    <label>Filter by School: </label>
+                    <label>Filter by Grade: </label>
                     <select
                         className='school-filter-select'
                         value={selectedSchoolFilter}
                         onChange={(e) => setSelectedSchoolFilter(e.target.value)}
                     >
-                        <option value="">All Schools ({schools.length})</option>
+                        <option value="">All Grades ({schools.length})</option>
                         {schools.map(s => (
                             <option key={s._id} value={s._id}>{s.userName}</option>
                         ))}
@@ -146,11 +146,11 @@ function OrganizationDetails() {
             <div className='org-stats-grid'>
                 <div className='org-stat-card' onClick={() => setActiveTab('schools')}>
                     <div className='stat-icon bg-blue'>
-                        <i className="fa fa-university" aria-hidden="true"></i>
+                        <i className="fa fa-graduation-cap" aria-hidden="true"></i>
                     </div>
                     <div>
                         <span className='stat-num'>{stats.totalSchools}</span>
-                        <span className='stat-label'>Attached Schools</span>
+                        <span className='stat-label'>Attached Grades</span>
                     </div>
                 </div>
 
@@ -166,7 +166,7 @@ function OrganizationDetails() {
 
                 <div className='org-stat-card' onClick={() => setActiveTab('students')}>
                     <div className='stat-icon bg-purple'>
-                        <i className="fa fa-graduation-cap" aria-hidden="true"></i>
+                        <i className="fa fa-user" aria-hidden="true"></i>
                     </div>
                     <div>
                         <span className='stat-num'>{stats.totalStudents}</span>
@@ -192,7 +192,7 @@ function OrganizationDetails() {
                         className={`tab-btn ${activeTab === 'schools' ? 'active' : ''}`}
                         onClick={() => setActiveTab('schools')}
                     >
-                        <i className="fa fa-university" aria-hidden="true"></i> Schools ({schools.length})
+                        <i className="fa fa-graduation-cap" aria-hidden="true"></i> Grades ({schools.length})
                     </button>
                     <button
                         className={`tab-btn ${activeTab === 'teachers' ? 'active' : ''}`}
@@ -204,7 +204,7 @@ function OrganizationDetails() {
                         className={`tab-btn ${activeTab === 'students' ? 'active' : ''}`}
                         onClick={() => setActiveTab('students')}
                     >
-                        <i className="fa fa-graduation-cap" aria-hidden="true"></i> Students ({stats.totalStudents})
+                        <i className="fa fa-user" aria-hidden="true"></i> Students ({stats.totalStudents})
                     </button>
                     <button
                         className={`tab-btn ${activeTab === 'classes' ? 'active' : ''}`}
@@ -235,13 +235,13 @@ function OrganizationDetails() {
                     </div>
                 )}
 
-                {/* TAB 1: Schools */}
+                {/* TAB 1: Grades */}
                 {!tabLoading && activeTab === 'schools' && (
                     <div className='schools-table-wrapper'>
                         <table className='org-table'>
                             <thead>
                                 <tr>
-                                    <th>School Name</th>
+                                    <th>Grade Name</th>
                                     <th>Email</th>
                                     <th>Teachers</th>
                                     <th>Students</th>
@@ -274,7 +274,7 @@ function OrganizationDetails() {
                                 {schools.length === 0 && (
                                     <tr>
                                         <td colSpan="6" className='text-center text-muted py-3'>
-                                            No schools assigned to this organization yet.
+                                            No grades assigned to this organization yet.
                                         </td>
                                     </tr>
                                 )}
@@ -291,7 +291,7 @@ function OrganizationDetails() {
                                 <tr>
                                     <th>Teacher Name</th>
                                     <th>Email</th>
-                                    <th>School</th>
+                                    <th>Grade</th>
                                     <th>Subject</th>
                                     <th>Assigned Classes</th>
                                     <th>Max Students</th>
@@ -334,7 +334,7 @@ function OrganizationDetails() {
                                 <tr>
                                     <th>Student Name</th>
                                     <th>Email / Username</th>
-                                    <th>School</th>
+                                    <th>Grade</th>
                                     <th>Class</th>
                                     <th>Teacher</th>
                                     <th>Coins</th>
@@ -374,7 +374,7 @@ function OrganizationDetails() {
                             <thead>
                                 <tr>
                                     <th>Class Name</th>
-                                    <th>School</th>
+                                    <th>Grade</th>
                                     <th>Assigned Teachers</th>
                                 </tr>
                             </thead>
