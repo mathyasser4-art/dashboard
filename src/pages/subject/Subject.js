@@ -186,7 +186,69 @@ function Subject() {
     }
     // reorder subject func end
 
+    // visibility toggles start
+    const toggleSystemVisibility = async (system) => {
+        const nextVisibility = system.isVisible === false ? true : false;
+        // Optimistic UI update
+        setAllSystem(prev => prev.map(s => s._id === system._id ? { ...s, isVisible: nextVisibility } : s));
+        try {
+            const res = await fetch(`https://backend-production-6752.up.railway.app/system/updateSystem/${system._id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ isVisible: nextVisibility })
+            });
+            const data = await res.json();
+            if (data.message === 'success' && data.allSystem) {
+                setAllSystem(data.allSystem);
+            }
+        } catch (err) {
+            console.error('Failed to update system visibility:', err);
+            // Revert on error
+            setAllSystem(prev => prev.map(s => s._id === system._id ? { ...s, isVisible: !nextVisibility } : s));
+            alert('Failed to update system visibility. Please try again.');
+        }
+    };
+
+    const toggleSubjectVisibility = async (systemId, subItem) => {
+        const nextVisibility = subItem.isVisible === false ? true : false;
+        // Optimistic UI update
+        setAllSystem(prev => prev.map(s => {
+            if (s._id !== systemId) return s;
+            return {
+                ...s,
+                subjects: s.subjects?.map(sub => sub._id === subItem._id ? { ...sub, isVisible: nextVisibility } : sub)
+            };
+        }));
+        try {
+            const res = await fetch(`https://backend-production-6752.up.railway.app/subject/updateSubject/${subItem._id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ isVisible: nextVisibility })
+            });
+            const data = await res.json();
+            if (data.message === 'success' && data.allSystem) {
+                setAllSystem(data.allSystem);
+            }
+        } catch (err) {
+            console.error('Failed to update level visibility:', err);
+            // Revert on error
+            setAllSystem(prev => prev.map(s => {
+                if (s._id !== systemId) return s;
+                return {
+                    ...s,
+                    subjects: s.subjects?.map(sub => sub._id === subItem._id ? { ...sub, isVisible: !nextVisibility } : sub)
+                };
+            }));
+            alert('Failed to update level visibility. Please try again.');
+        }
+    };
+    // visibility toggles end
+
     if (loading) return (<div className='loading-container'><div className='d-flex justify-content-center'><span className="page-loader"></span></div></div>)
+
+    const totalSystemsCount = allSystem?.length || 0;
+    const visibleSystemsCount = allSystem?.filter(s => s.isVisible !== false).length || 0;
+    const hiddenSystemsCount = allSystem?.filter(s => s.isVisible === false).length || 0;
 
     return (
         <div className='subject-container'>
@@ -194,27 +256,91 @@ function Subject() {
                 <span>+</span>
                 <p onClick={openAddSystem}>Add New System</p>
             </div>
+
+            {/* Systems Visibility Summary Stats */}
+            <div className="systems-stats-bar d-flex align-items-center">
+                <div className="stat-pill stat-total">
+                    <strong>{totalSystemsCount}</strong> Total Systems
+                </div>
+                <div className="stat-pill stat-visible">
+                    <i className="fa fa-eye"></i>
+                    <strong>{visibleSystemsCount}</strong> Visible to Users
+                </div>
+                {hiddenSystemsCount > 0 && (
+                    <div className="stat-pill stat-hidden">
+                        <i className="fa fa-eye-slash"></i>
+                        <strong>{hiddenSystemsCount}</strong> Hidden from Users
+                    </div>
+                )}
+            </div>
+
             <div className='d-flex flex-wrap'>
                 {allSystem?.map((item, systemIndex) => {
+                    const isSystemHidden = item.isVisible === false;
                     return (
-                        <div className='system-cover' key={item._id}>
-                            <div className='d-flex justify-content-space-between align-items-center'>
-                                <p className='system-name'>{item.systemName}</p>
-                                <div className='system-icon'>
-                                    <i onClick={() => openAddSubPopup(item._id)} className="fa fa-plus" aria-hidden="true"></i>
-                                    <i onClick={() => openUpdateSysPopup(item.systemName, item._id)} className="fa fa-pencil" aria-hidden="true"></i>
-                                    <i onClick={() => openDeleteSysPopup(item)} className="fa fa-trash" style={{color: '#ff4d4f', marginLeft: '10px'}} aria-hidden="true"></i>
+                        <div className={`system-cover ${isSystemHidden ? 'is-hidden-system' : ''}`} key={item._id}>
+                            <div className='d-flex justify-content-space-between align-items-center' style={{ flexWrap: 'wrap', gap: '8px' }}>
+                                <div className='d-flex align-items-center' style={{ gap: '10px' }}>
+                                    <p className='system-name' style={{ margin: 0 }}>{item.systemName}</p>
+                                    <span 
+                                        className={`visibility-badge ${!isSystemHidden ? 'badge-visible' : 'badge-hidden'}`}
+                                        title={!isSystemHidden ? 'Visible to students and teachers' : 'Hidden from students and teachers'}
+                                    >
+                                        <i className={`fa ${!isSystemHidden ? 'fa-check-circle' : 'fa-eye-slash'}`}></i>
+                                        {!isSystemHidden ? 'Visible' : 'Hidden'}
+                                    </span>
+                                </div>
+                                <div className='system-icon d-flex align-items-center'>
+                                    <button
+                                        type="button"
+                                        onClick={() => toggleSystemVisibility(item)}
+                                        className={`visibility-toggle-btn ${!isSystemHidden ? 'btn-active-visible' : 'btn-active-hidden'}`}
+                                        title={!isSystemHidden ? 'Click to hide this system from users' : 'Click to show this system to users'}
+                                    >
+                                        <i className={`fa ${!isSystemHidden ? 'fa-eye' : 'fa-eye-slash'}`}></i>
+                                        <span>{!isSystemHidden ? 'Hide' : 'Show'}</span>
+                                    </button>
+                                    <i onClick={() => openAddSubPopup(item._id)} className="fa fa-plus" title="Add Subject/Level" aria-hidden="true"></i>
+                                    <i onClick={() => openUpdateSysPopup(item.systemName, item._id)} className="fa fa-pencil" title="Edit System Name" aria-hidden="true"></i>
+                                    <i onClick={() => openDeleteSysPopup(item)} className="fa fa-trash" style={{color: '#ff4d4f', marginLeft: '10px'}} title="Delete System" aria-hidden="true"></i>
                                 </div>
                             </div>
+
+                            {isSystemHidden && (
+                                <div className="hidden-system-banner">
+                                    <i className="fa fa-info-circle"></i> This system is hidden from students and teachers.
+                                </div>
+                            )}
+
                             {item.subjects?.map((subItem, subjectIndex) => {
+                                const isSubHidden = subItem.isVisible === false;
                                 return (
-                                    <div className='subject-cover d-flex justify-content-space-between align-items-center' key={subItem._id}>
-                                        <Link to={`/unit/${questionTypeName}/${questionTypeID}/${subItem._id}`}><p className='subject-name'>{subItem.subjectName}</p></Link>
-                                        <div>
+                                    <div className={`subject-cover d-flex justify-content-space-between align-items-center ${isSubHidden ? 'subject-is-hidden' : ''}`} key={subItem._id}>
+                                        <div className="d-flex align-items-center" style={{ gap: '8px' }}>
+                                            <Link to={`/unit/${questionTypeName}/${questionTypeID}/${subItem._id}`}>
+                                                <p className='subject-name'>{subItem.subjectName}</p>
+                                            </Link>
+                                            {isSubHidden && (
+                                                <span className="sub-hidden-tag">Hidden</span>
+                                            )}
+                                        </div>
+                                        <div className="d-flex align-items-center">
+                                            <i 
+                                                onClick={() => toggleSubjectVisibility(item._id, subItem)} 
+                                                className={`fa ${!isSubHidden ? 'fa-eye' : 'fa-eye-slash'} subject-eye-btn`} 
+                                                style={{
+                                                    marginRight: '12px', 
+                                                    color: !isSubHidden ? '#4ade80' : '#fda4af',
+                                                    fontSize: '1.2rem',
+                                                    cursor: 'pointer'
+                                                }} 
+                                                title={!isSubHidden ? 'Level visible to users (Click to hide)' : 'Level hidden from users (Click to show)'}
+                                                aria-hidden="true"
+                                            ></i>
                                             {subjectIndex > 0 && <i onClick={() => moveSubjectUp(systemIndex, subjectIndex)} className="fa fa-arrow-up" style={{marginRight: '10px'}} aria-hidden="true"></i>}
                                             {subjectIndex < item.subjects.length - 1 && <i onClick={() => moveSubjectDown(systemIndex, subjectIndex)} className="fa fa-arrow-down" style={{marginRight: '10px'}} aria-hidden="true"></i>}
-                                            <i onClick={() => openUpdateSubPopup(subItem.subjectName, subItem._id)} className="fa fa-pencil" aria-hidden="true"></i>
-                                            <i onClick={() => openDeleteSubPopup(subItem._id)} className="fa fa-trash" style={{color: '#ff4d4f', marginLeft: '10px'}} aria-hidden="true"></i>
+                                            <i onClick={() => openUpdateSubPopup(subItem.subjectName, subItem._id)} className="fa fa-pencil" style={{marginRight: '10px'}} aria-hidden="true"></i>
+                                            <i onClick={() => openDeleteSubPopup(subItem._id)} className="fa fa-trash" style={{color: '#ff4d4f'}} aria-hidden="true"></i>
                                         </div>
                                     </div>
                                 )
@@ -222,14 +348,6 @@ function Subject() {
                         </div>
                     )
                 })}
-                {/* {allSubject?.map(item => {
-                    return (
-                        <div key={item._id}>
-                            <Link to={`/unit/${questionTypeName}/${questionTypeID}/${item._id}`}><p>{item.subjectName}</p></Link>
-                            <button className='subject-update' onClick={() => openUpdatePopup(item.subjectName, item._id)}>update</button>
-                        </div>
-                    )
-                })} */}
             </div>
             {/* add system popup start */}
             <div className="add-system-popup subject-popup d-none justify-content-center align-items-center">
