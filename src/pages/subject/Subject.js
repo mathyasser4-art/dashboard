@@ -8,6 +8,7 @@ import deleteSystem from '../../api/deleteSystem.api'
 import updateSubject from '../../api/updateSubject.api';
 import deleteSubject from '../../api/deleteSubject.api';
 import reorderSubjects from '../../api/reorderSubjects.api';
+import getAllSchool from '../../api/getAllSchool.api';
 import '../../reusable.css'
 import './Subject.css'
 
@@ -22,8 +23,18 @@ function Subject() {
     const [serverOperationLoading, setServerOperationLoading] = useState(false)
     const { questionTypeID, questionTypeName } = useParams()
 
+    // School access visibility state
+    const [allSchools, setAllSchools] = useState([]);
+    const [loadingSchools, setLoadingSchools] = useState(false);
+    const [schoolModalSystem, setSchoolModalSystem] = useState(null);
+    const [modalVisibilityMode, setModalVisibilityMode] = useState('all');
+    const [modalSelectedSchoolIds, setModalSelectedSchoolIds] = useState([]);
+    const [schoolSearchTerm, setSchoolSearchTerm] = useState('');
+    const [savingSchoolAccess, setSavingSchoolAccess] = useState(false);
+
     useEffect(() => {
-        getAllSystem()
+        getAllSystem();
+        getAllSchool(setAllSchools, setLoadingSchools);
     }, []);
 
     // get all system
@@ -244,6 +255,79 @@ function Subject() {
     };
     // visibility toggles end
 
+    // School-specific visibility modal handlers start
+    const openSchoolModal = (system) => {
+        setSchoolModalSystem(system);
+        const mode = system.visibilityMode || ((system.allowedSchools && system.allowedSchools.length > 0) ? 'specific' : 'all');
+        setModalVisibilityMode(mode);
+        setModalSelectedSchoolIds((system.allowedSchools || []).map(s => String(s._id || s)));
+        setSchoolSearchTerm('');
+    };
+
+    const closeSchoolModal = () => {
+        setSchoolModalSystem(null);
+        setSchoolSearchTerm('');
+    };
+
+    const handleToggleSchoolSelection = (schoolId) => {
+        const strId = String(schoolId);
+        setModalSelectedSchoolIds(prev => 
+            prev.includes(strId) ? prev.filter(id => id !== strId) : [...prev, strId]
+        );
+    };
+
+    const handleSelectAllSchools = () => {
+        setModalSelectedSchoolIds(allSchools.map(s => String(s._id)));
+    };
+
+    const handleDeselectAllSchools = () => {
+        setModalSelectedSchoolIds([]);
+    };
+
+    const handleSaveSchoolAccess = async () => {
+        if (!schoolModalSystem) return;
+        setSavingSchoolAccess(true);
+        const targetSystemId = schoolModalSystem._id;
+        const payload = {
+            visibilityMode: modalVisibilityMode,
+            allowedSchools: modalVisibilityMode === 'specific' ? modalSelectedSchoolIds : [],
+            isVisible: modalVisibilityMode !== 'none'
+        };
+
+        // Optimistic UI update
+        setAllSystem(prev => prev.map(s => {
+            if (s._id !== targetSystemId) return s;
+            return {
+                ...s,
+                visibilityMode: modalVisibilityMode,
+                allowedSchools: modalVisibilityMode === 'specific' 
+                    ? allSchools.filter(sch => modalSelectedSchoolIds.includes(String(sch._id))) 
+                    : [],
+                isVisible: modalVisibilityMode !== 'none'
+            };
+        }));
+
+        try {
+            const res = await fetch(`https://backend-production-6752.up.railway.app/system/updateSystem/${targetSystemId}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            const data = await res.json();
+            if (data.message === 'success' && data.allSystem) {
+                setAllSystem(data.allSystem);
+            }
+            closeSchoolModal();
+        } catch (err) {
+            console.error('Failed to save school visibility settings:', err);
+            alert('Failed to save school visibility settings. Please try again.');
+            getAllSystem();
+        } finally {
+            setSavingSchoolAccess(false);
+        }
+    };
+    // School-specific visibility modal handlers end
+
     if (loading) return (<div className='loading-container'><div className='d-flex justify-content-center'><span className="page-loader"></span></div></div>)
 
     const totalSystemsCount = allSystem?.length || 0;
@@ -277,20 +361,50 @@ function Subject() {
             <div className='d-flex flex-wrap'>
                 {allSystem?.map((item, systemIndex) => {
                     const isSystemHidden = item.isVisible === false;
+                    const mode = item.visibilityMode || ((item.allowedSchools && item.allowedSchools.length > 0) ? 'specific' : 'all');
+                    const schoolCount = item.allowedSchools?.length || 0;
+
                     return (
                         <div className={`system-cover ${isSystemHidden ? 'is-hidden-system' : ''}`} key={item._id}>
                             <div className='d-flex justify-content-space-between align-items-center' style={{ flexWrap: 'wrap', gap: '8px' }}>
-                                <div className='d-flex align-items-center' style={{ gap: '10px' }}>
+                                <div className='d-flex align-items-center' style={{ gap: '8px', flexWrap: 'wrap' }}>
                                     <p className='system-name' style={{ margin: 0 }}>{item.systemName}</p>
                                     <span 
                                         className={`visibility-badge ${!isSystemHidden ? 'badge-visible' : 'badge-hidden'}`}
-                                        title={!isSystemHidden ? 'Visible to students and teachers' : 'Hidden from students and teachers'}
+                                        title={!isSystemHidden ? 'Visible to users' : 'Hidden from users'}
                                     >
                                         <i className={`fa ${!isSystemHidden ? 'fa-check-circle' : 'fa-eye-slash'}`}></i>
                                         {!isSystemHidden ? 'Visible' : 'Hidden'}
                                     </span>
+
+                                    {/* School Access Scope Badge */}
+                                    {mode === 'none' || isSystemHidden ? (
+                                        <span className="school-access-badge badge-school-none" title="Hidden from all schools">
+                                            <i className="fa fa-ban"></i> No Schools
+                                        </span>
+                                    ) : mode === 'specific' ? (
+                                        <span 
+                                            className="school-access-badge badge-school-specific" 
+                                            title={item.allowedSchools?.map(s => s.userName).filter(Boolean).join(', ') || `${schoolCount} Schools assigned`}
+                                        >
+                                            <i className="fa fa-university"></i> {schoolCount} {schoolCount === 1 ? 'School' : 'Schools'}
+                                        </span>
+                                    ) : (
+                                        <span className="school-access-badge badge-school-all" title="Available to all schools">
+                                            <i className="fa fa-globe"></i> All Schools
+                                        </span>
+                                    )}
                                 </div>
                                 <div className='system-icon d-flex align-items-center'>
+                                    <button
+                                        type="button"
+                                        onClick={() => openSchoolModal(item)}
+                                        className="school-access-btn"
+                                        title="Configure which schools can see this system"
+                                    >
+                                        <i className="fa fa-university"></i>
+                                        <span>Schools</span>
+                                    </button>
                                     <button
                                         type="button"
                                         onClick={() => toggleSystemVisibility(item)}
@@ -420,6 +534,138 @@ function Subject() {
                 </div>
             </div>
             {/* delete system popup end */}
+
+            {/* School Visibility Access Modal start */}
+            {schoolModalSystem && (
+                <div className="school-modal-backdrop d-flex justify-content-center align-items-center">
+                    <div className="school-modal-card">
+                        <div className="school-modal-header d-flex justify-content-space-between align-items-center">
+                            <div>
+                                <h3 className="school-modal-title">
+                                    <i className="fa fa-university" style={{ color: '#4f46e5', marginRight: '8px' }}></i>
+                                    Manage School Visibility
+                                </h3>
+                                <p className="school-modal-subtitle">
+                                    System: <strong>{schoolModalSystem.systemName}</strong>
+                                </p>
+                            </div>
+                            <button type="button" className="close-x-btn" onClick={closeSchoolModal} title="Close">✕</button>
+                        </div>
+
+                        <div className="school-modal-body">
+                            <p className="visibility-section-label">Which schools can see and access this system?</p>
+                            <div className="visibility-options-group">
+                                <label className={`visibility-radio-label ${modalVisibilityMode === 'all' ? 'active-radio' : ''}`}>
+                                    <input 
+                                        type="radio" 
+                                        name="visibilityMode" 
+                                        value="all" 
+                                        checked={modalVisibilityMode === 'all'} 
+                                        onChange={() => setModalVisibilityMode('all')} 
+                                    />
+                                    <div className="radio-text-box">
+                                        <strong><i className="fa fa-globe" style={{ color: '#059669', marginRight: '6px' }}></i> All Schools (Default)</strong>
+                                        <span>Every school, teacher, and student can see this curriculum system.</span>
+                                    </div>
+                                </label>
+
+                                <label className={`visibility-radio-label ${modalVisibilityMode === 'specific' ? 'active-radio' : ''}`}>
+                                    <input 
+                                        type="radio" 
+                                        name="visibilityMode" 
+                                        value="specific" 
+                                        checked={modalVisibilityMode === 'specific'} 
+                                        onChange={() => setModalVisibilityMode('specific')} 
+                                    />
+                                    <div className="radio-text-box">
+                                        <strong><i className="fa fa-building-o" style={{ color: '#2563eb', marginRight: '6px' }}></i> Specific Schools Only</strong>
+                                        <span>Only students and teachers belonging to the selected schools will see this system.</span>
+                                    </div>
+                                </label>
+
+                                <label className={`visibility-radio-label ${modalVisibilityMode === 'none' ? 'active-radio' : ''}`}>
+                                    <input 
+                                        type="radio" 
+                                        name="visibilityMode" 
+                                        value="none" 
+                                        checked={modalVisibilityMode === 'none'} 
+                                        onChange={() => setModalVisibilityMode('none')} 
+                                    />
+                                    <div className="radio-text-box">
+                                        <strong><i className="fa fa-eye-slash" style={{ color: '#dc2626', marginRight: '6px' }}></i> Hide From All Schools</strong>
+                                        <span>Temporarily disable this system completely for all schools.</span>
+                                    </div>
+                                </label>
+                            </div>
+
+                            {modalVisibilityMode === 'specific' && (
+                                <div className="specific-schools-section">
+                                    <div className="schools-search-toolbar d-flex justify-content-space-between align-items-center">
+                                        <input 
+                                            type="text" 
+                                            className="school-search-input" 
+                                            placeholder="🔍 Search schools by name or email..." 
+                                            value={schoolSearchTerm} 
+                                            onChange={e => setSchoolSearchTerm(e.target.value)} 
+                                        />
+                                        <div className="quick-select-btns d-flex" style={{ gap: '8px' }}>
+                                            <button type="button" onClick={handleSelectAllSchools} className="btn-tiny">Select All</button>
+                                            <button type="button" onClick={handleDeselectAllSchools} className="btn-tiny">Clear All</button>
+                                        </div>
+                                    </div>
+
+                                    <div className="schools-checklist-box">
+                                        {allSchools
+                                            .filter(sch => {
+                                                if (!schoolSearchTerm.trim()) return true;
+                                                const term = schoolSearchTerm.toLowerCase();
+                                                return (sch.userName && sch.userName.toLowerCase().includes(term)) ||
+                                                       (sch.email && sch.email.toLowerCase().includes(term));
+                                            })
+                                            .map(school => {
+                                                const isChecked = modalSelectedSchoolIds.includes(String(school._id));
+                                                return (
+                                                    <label key={school._id} className={`school-check-row d-flex align-items-center ${isChecked ? 'is-selected-school' : ''}`}>
+                                                        <input 
+                                                            type="checkbox" 
+                                                            checked={isChecked} 
+                                                            onChange={() => handleToggleSchoolSelection(school._id)} 
+                                                        />
+                                                        <div className="school-info-col">
+                                                            <span className="school-name-text">{school.userName}</span>
+                                                            {school.email && <span className="school-email-text">{school.email}</span>}
+                                                        </div>
+                                                        <span className={`school-status-tag ${school.disable ? 'status-disabled' : 'status-active'}`}>
+                                                            {school.disable ? 'Inactive' : 'Active'}
+                                                        </span>
+                                                    </label>
+                                                );
+                                            })
+                                        }
+                                        {allSchools.length === 0 && !loadingSchools && (
+                                            <p className="no-schools-text">No registered schools found.</p>
+                                        )}
+                                        {loadingSchools && (
+                                            <p className="no-schools-text">Loading schools...</p>
+                                        )}
+                                    </div>
+                                    <div className="selected-schools-counter">
+                                        <strong>{modalSelectedSchoolIds.length}</strong> of {allSchools.length} schools selected
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+
+                        <div className="school-modal-footer d-flex justify-content-end align-items-center" style={{ gap: '10px' }}>
+                            <button type="button" className="button" style={{ background: '#94a3b8' }} onClick={closeSchoolModal}>Cancel</button>
+                            <button type="button" className="button" style={{ background: '#2563eb' }} onClick={handleSaveSchoolAccess} disabled={savingSchoolAccess}>
+                                {savingSchoolAccess ? <span className="button-loader"></span> : 'Save School Access'}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+            {/* School Visibility Access Modal end */}
 
         </div>
     )
