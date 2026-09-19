@@ -16,8 +16,8 @@ import './Chapter.css'
 const TOPIC_QUESTION_TYPE_ID = '65a4963482dbaac16d820fc6'
 const PAST_PAPERS_QUESTION_TYPE_ID = '65a4964b82dbaac16d820fc8'
 const QUESTION_TYPE_OPTIONS = [
-    { id: TOPIC_QUESTION_TYPE_ID, name: 'Topic Questions' },
-    { id: PAST_PAPERS_QUESTION_TYPE_ID, name: 'Past Papers' }
+    { id: TOPIC_QUESTION_TYPE_ID, name: 'Choose' },
+    { id: PAST_PAPERS_QUESTION_TYPE_ID, name: 'Complete' }
 ]
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
@@ -648,20 +648,20 @@ const Chapter = () => {
                                 ))}
                             </select>
                             <select value={destinationUnitID} onChange={e => setDestinationUnitID(e.target.value)}>
-                                <option value=''>Choose {(destinationQuestionTypeID === PAST_PAPERS_QUESTION_TYPE_ID) ? 'year' : 'unit'}</option>
+                                <option value=''>Choose unit</option>
                                 {availableUnits.map(item => (
                                     <option key={item._id} value={item._id}>{item.unitName}</option>
                                 ))}
                             </select>
                             <select value={destinationChapterID} onChange={e => setDestinationChapterID(e.target.value)} disabled={!selectedUnit || destinationUnitsLoading}>
-                                <option value=''>Choose {(destinationQuestionTypeID === PAST_PAPERS_QUESTION_TYPE_ID) ? 'exam' : 'chapter'}</option>
+                                <option value=''>Choose chapter</option>
                                 {selectedUnit?.chapters?.map(item => (
                                     <option key={item._id} value={item._id}>{item.chapterName}</option>
                                 ))}
                             </select>
                             {(selectedUnit || selectedChapter) ? <div className='move-target-preview'>
-                                {selectedUnit ? <p><strong>{(destinationQuestionTypeID === PAST_PAPERS_QUESTION_TYPE_ID) ? 'Year' : 'Unit'}:</strong> {selectedUnit.unitName}</p> : ''}
-                                {selectedChapter ? <p><strong>{(destinationQuestionTypeID === PAST_PAPERS_QUESTION_TYPE_ID) ? 'Exam' : 'Chapter'}:</strong> {selectedChapter.chapterName}</p> : ''}
+                                {selectedUnit ? <p><strong>Unit:</strong> {selectedUnit.unitName}</p> : ''}
+                                {selectedChapter ? <p><strong>Chapter:</strong> {selectedChapter.chapterName}</p> : ''}
                             </div> : ''}
                         </>
                     )}
@@ -722,20 +722,20 @@ const Chapter = () => {
                                         ))}
                                     </select>
                                     <select value={worksheetDestUnitID} onChange={e => setWorksheetDestUnitID(e.target.value)}>
-                                        <option value=''>Choose {(worksheetDestQuestionTypeID === PAST_PAPERS_QUESTION_TYPE_ID) ? 'year' : 'unit'}</option>
+                                        <option value=''>Choose unit</option>
                                         {worksheetAvailableUnits.map(item => (
                                             <option key={item._id} value={item._id}>{item.unitName}</option>
                                         ))}
                                     </select>
                                     <select value={worksheetDestChapterID} onChange={e => setWorksheetDestChapterID(e.target.value)} disabled={!worksheetSelectedUnit || worksheetDestinationUnitsLoading}>
-                                        <option value=''>Choose {(worksheetDestQuestionTypeID === PAST_PAPERS_QUESTION_TYPE_ID) ? 'exam' : 'chapter'}</option>
+                                        <option value=''>Choose chapter</option>
                                         {worksheetSelectedUnit?.chapters?.map(item => (
                                             <option key={item._id} value={item._id}>{item.chapterName}</option>
                                         ))}
                                     </select>
                                     {(worksheetSelectedUnit || worksheetSelectedChapter) ? <div className='move-target-preview'>
-                                        {worksheetSelectedUnit ? <p><strong>{(worksheetDestQuestionTypeID === PAST_PAPERS_QUESTION_TYPE_ID) ? 'Year' : 'Unit'}:</strong> {worksheetSelectedUnit.unitName}</p> : ''}
-                                        {worksheetSelectedChapter ? <p><strong>{(worksheetDestQuestionTypeID === PAST_PAPERS_QUESTION_TYPE_ID) ? 'Exam' : 'Chapter'}:</strong> {worksheetSelectedChapter.chapterName}</p> : ''}
+                                        {worksheetSelectedUnit ? <p><strong>Unit:</strong> {worksheetSelectedUnit.unitName}</p> : ''}
+                                        {worksheetSelectedChapter ? <p><strong>Chapter:</strong> {worksheetSelectedChapter.chapterName}</p> : ''}
                                     </div> : ''}
                                 </>
                             )}

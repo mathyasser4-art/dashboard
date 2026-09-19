@@ -7,11 +7,11 @@ const QuestionType = () => {
     const allQuestionType = [
         {
             _id: "65a4963482dbaac16d820fc6",
-            typeOfquestion: "Topic Questions",
+            typeOfquestion: "Choose",
         },
         {
             _id: "65a4964b82dbaac16d820fc8",
-            typeOfquestion: "Past Papers",
+            typeOfquestion: "Complete",
         },
     ]
     return (

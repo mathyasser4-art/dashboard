@@ -1,13 +1,11 @@
-const URL = 'https://sat-backend-production.up.railway.app/system/deleteSystem';
-const Token = localStorage.getItem('O_authDB');
+const URL = 'https://backend-production-6752.up.railway.app/system/deleteSystem';
 
 const deleteSystem = (systemID, setserverOperationError, setServerOperationLoading, setAllSystem) => {
     setServerOperationLoading(true);
     fetch(`${URL}/${systemID}`, {
         method: 'DELETE',
         headers: {
-            'Content-Type': 'application/json',
-            'authorization': `pracYas09${Token}`
+            'Content-Type': 'application/json'
         },
     })
     .then((response) => response.json())
